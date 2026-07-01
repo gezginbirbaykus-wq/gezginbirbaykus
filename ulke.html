@@ -90,7 +90,7 @@
 
       // İller
       const liste = document.getElementById('il-listesi');
-      const q = query(collection(db, 'iller'), where('ulkeId', '==', ulkeId), orderBy('sira'));
+      const q = query(collection(db, 'iller'), where('ulkeId', '==', ulkeId));
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
@@ -99,10 +99,15 @@
       }
 
       liste.innerHTML = '';
+      const iller = [];
       snapshot.forEach(d => {
-        const il = d.data();
+        iller.push({ id: d.id, ...d.data() });
+      });
+      iller.sort((a, b) => (a.sira || 999) - (b.sira || 999));
+      
+      iller.forEach(il => {
         liste.innerHTML += `
-          <a href="il.html?id=${d.id}" class="card">
+          <a href="il.html?id=${il.id}" class="card">
             <div class="card-img">
               ${il.fotograf ? `<img src="${il.fotograf}" alt="${il.ad}" />` : '🏙️'}
             </div>

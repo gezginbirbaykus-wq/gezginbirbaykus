@@ -527,7 +527,7 @@ img { max-width: 100%; display: block; }
 
 /* ===== ADMIN — GİRİŞ ===== */
 .admin-login {
-  min-height: 100vh;
+  min-height: calc(100vh - 68px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -546,7 +546,30 @@ img { max-width: 100%; display: block; }
   box-shadow: 0 8px 40px rgba(155,98,64,0.08);
 }
 
-.login-box .login-owl { font-size: 3rem; margin-bottom: 12px; display: block; }
+.login-logo-wrap {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-logo-wrap img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+/* Açık modda: Logo.png (kahverengi), karanlık modda: Logo2.png (beyaz) */
+.login-logo-light {
+  display: block;
+  mix-blend-mode: multiply;
+}
+.login-logo-dark { display: none; }
+
+[data-theme="dark"] .login-logo-light { display: none; }
+[data-theme="dark"] .login-logo-dark  { display: block; }
 
 .login-box h2 {
   font-family: 'Sanchez', serif;
@@ -554,6 +577,20 @@ img { max-width: 100%; display: block; }
   color: var(--brown);
   font-size: 1.55rem;
   margin-bottom: 36px;
+}
+
+/* ===== ADMIN TABS BAR ===== */
+.admin-tabs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-tabs-bar .admin-tabs {
+  margin-bottom: 0;
 }
 
 /* ===== FORM ELEMENTS ===== */
@@ -636,36 +673,6 @@ img { max-width: 100%; display: block; }
 
 /* ===== ADMIN PANEL ===== */
 .admin-panel { min-height: 100vh; background: var(--bg); }
-
-.admin-topbar {
-  background: var(--brown);
-  color: var(--cream);
-  padding: 15px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.admin-topbar h1 {
-  font-family: 'Sanchez', serif;
-  font-style: italic;
-  font-size: 1.2rem;
-}
-
-.admin-topbar button {
-  background: rgba(255,255,255,0.14);
-  border: 1px solid rgba(255,255,255,0.28);
-  color: var(--cream);
-  padding: 8px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: background 0.2s;
-}
-
-.admin-topbar button:hover { background: rgba(255,255,255,0.24); }
 
 .admin-body { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
 

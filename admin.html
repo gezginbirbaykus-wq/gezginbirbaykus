@@ -8,10 +8,26 @@
 </head>
 <body>
 
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-area">
+        <img src="assets/Logo.png" alt="Gezginbirbaykus Logo" onerror="this.style.display='none'" />
+        <span class="logo-text">Gezginbirbaykus</span>
+      </a>
+      <div class="header-right">
+        <button class="theme-toggle" id="theme-toggle" aria-label="Gece modu"></button>
+      </div>
+    </div>
+  </header>
+
   <!-- GİRİŞ EKRANI -->
   <div class="admin-login" id="login-ekran">
     <div class="login-box">
-      <p style="font-size:2.5rem;margin-bottom:8px;">🦉</p>
+      <div class="login-logo-wrap">
+        <img src="assets/Logo.png" alt="Gezginbirbaykus" class="login-logo-light" onerror="this.style.display='none'" />
+        <img src="assets/Logo2.png" alt="Gezginbirbaykus" class="login-logo-dark" onerror="this.style.display='none'" />
+      </div>
       <h2>Admin Girişi</h2>
       <div id="login-alert"></div>
       <form id="login-form">
@@ -31,18 +47,16 @@
   <!-- ADMİN PANELİ -->
   <div class="admin-panel" id="admin-panel" style="display:none;">
 
-    <div class="admin-topbar">
-      <h1>🦉 Gezginbirbaykus Admin</h1>
-      <button id="cikis-btn">Çıkış Yap</button>
-    </div>
-
     <div class="admin-body">
 
       <!-- TABS -->
-      <div class="admin-tabs">
-        <button class="admin-tab active" data-tab="ulke">Ülkeler</button>
-        <button class="admin-tab" data-tab="il">İller</button>
-        <button class="admin-tab" data-tab="ilce">İlçeler</button>
+      <div class="admin-tabs-bar">
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-tab="ulke">Ülkeler</button>
+          <button class="admin-tab" data-tab="il">İller</button>
+          <button class="admin-tab" data-tab="ilce">İlçeler</button>
+        </div>
+        <button id="cikis-btn" class="btn btn-secondary btn-sm">Çıkış Yap</button>
       </div>
 
       <!-- ===== ÜLKELER TAB ===== -->
@@ -54,10 +68,6 @@
             <div class="form-group">
               <label>Ülke Adı *</label>
               <input type="text" id="ulke-ad" required placeholder="Türkiye" />
-            </div>
-            <div class="form-group">
-              <label>Kısa Açıklama</label>
-              <input type="text" id="ulke-aciklama" placeholder="Kısa bir tanıtım..." />
             </div>
             <div class="form-group">
               <label>Fotoğraf URL (opsiyonel)</label>
@@ -201,6 +211,17 @@
       doc, query, orderBy, where, serverTimestamp
     } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
+    // ===== GECE MODU =====
+    const toggle = document.getElementById('theme-toggle');
+    const saved = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    toggle.addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    });
+
     // ===== AUTH =====
     onAuthStateChanged(auth, user => {
       if (user) {
@@ -297,7 +318,7 @@
       try {
         await addDoc(collection(db, 'ulkeler'), {
           ad: document.getElementById('ulke-ad').value.trim(),
-          aciklama: document.getElementById('ulke-aciklama').value.trim(),
+          aciklama: '',
           fotograf: document.getElementById('ulke-fotograf').value.trim(),
           sira: parseInt(document.getElementById('ulke-sira').value) || 1,
           olusturuldu: serverTimestamp()

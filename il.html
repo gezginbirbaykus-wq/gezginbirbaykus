@@ -101,7 +101,7 @@
 
       // İlçeler
       const liste = document.getElementById('ilce-listesi');
-      const q = query(collection(db, 'ilceler'), where('ilId', '==', ilId), orderBy('sira'));
+      const q = query(collection(db, 'ilceler'), where('ilId', '==', ilId));
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
@@ -110,8 +110,14 @@
       }
 
       liste.innerHTML = '';
+      const ilceler = [];
       snapshot.forEach(d => {
-        const ilce = d.data();
+        ilceler.push({ id: d.id, ...d.data() });
+      });
+      ilceler.sort((a, b) => (a.sira || 999) - (b.sira || 999));
+      
+      ilceler.forEach(d => {
+        const ilce = d;
         liste.innerHTML += `
           <a href="ilce.html?id=${d.id}" class="card">
             <div class="card-img">
