@@ -62,9 +62,10 @@
       <!-- ===== ÜLKELER TAB ===== -->
       <div class="tab-panel active" id="tab-ulke">
         <div class="admin-card">
-          <h3>Yeni Ülke Ekle</h3>
+          <h3 id="ulke-form-baslik">Yeni Ülke Ekle</h3>
           <div id="ulke-alert"></div>
           <form id="ulke-form">
+            <input type="hidden" id="ulke-edit-id" />
             <div class="form-group">
               <label>Ülke Adı *</label>
               <input type="text" id="ulke-ad" required placeholder="Türkiye" />
@@ -84,11 +85,10 @@
               </div>
               <input type="hidden" id="ulke-fotograf" />
             </div>
-            <div class="form-group">
-              <label>Sıra (sayısal, küçük önce görünür)</label>
-              <input type="number" id="ulke-sira" value="1" min="1" />
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <button type="submit" class="btn btn-primary" style="width:auto;" id="ulke-kaydet-btn">Ülke Ekle</button>
+              <button type="button" class="btn btn-secondary" id="ulke-iptal-btn" style="display:none;">İptal</button>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:auto;">Ülke Ekle</button>
           </form>
         </div>
 
@@ -103,9 +103,10 @@
       <!-- ===== İLLER TAB ===== -->
       <div class="tab-panel" id="tab-il">
         <div class="admin-card">
-          <h3>Yeni İl Ekle</h3>
+          <h3 id="il-form-baslik">Yeni İl Ekle</h3>
           <div id="il-alert"></div>
           <form id="il-form">
+            <input type="hidden" id="il-edit-id" />
             <div class="form-group">
               <label>Ülke *</label>
               <select id="il-ulke" required>
@@ -135,11 +136,10 @@
               </div>
               <input type="hidden" id="il-fotograf" />
             </div>
-            <div class="form-group">
-              <label>Sıra</label>
-              <input type="number" id="il-sira" value="1" min="1" />
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <button type="submit" class="btn btn-primary" style="width:auto;" id="il-kaydet-btn">İl Ekle</button>
+              <button type="button" class="btn btn-secondary" id="il-iptal-btn" style="display:none;">İptal</button>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:auto;">İl Ekle</button>
           </form>
         </div>
 
@@ -203,10 +203,6 @@
             <div class="form-group">
               <label>Instagram Kullanıcı Adı veya URL</label>
               <input type="text" id="ilce-instagram" placeholder="@kullaniciadi veya https://instagram.com/..." />
-            </div>
-            <div class="form-group">
-              <label>Sıra</label>
-              <input type="number" id="ilce-sira" value="1" min="1" />
             </div>
             <div style="display:flex;gap:12px;flex-wrap:wrap;">
               <button type="submit" class="btn btn-primary" style="width:auto;" id="ilce-kaydet-btn">İlçe Ekle</button>
@@ -359,9 +355,15 @@
 
     // ===== ÜLKELER =====
     async function ulkeleriYukle() {
-      const q = query(collection(db, 'ulkeler'), orderBy('sira'));
-      const snap = await getDocs(q);
+      const snap = await getDocs(collection(db, 'ulkeler'));
       ulkeler = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      ulkeler.sort((a, b) => {
+        const aTr = a.ad.replace(/^\W+/, '').toLowerCase().startsWith('türkiye');
+        const bTr = b.ad.replace(/^\W+/, '').toLowerCase().startsWith('türkiye');
+        if (aTr && !bTr) return -1;
+        if (!aTr && bTr) return 1;
+        return a.ad.localeCompare(b.ad, 'tr');
+      });
       renderUlkeler();
     }
 
@@ -375,9 +377,9 @@
         <div class="list-item">
           <div class="list-item-info">
             <h4>${u.ad}</h4>
-            <p>${u.aciklama || ''}</p>
           </div>
           <div class="list-item-actions">
+            <button class="btn btn-secondary btn-sm" onclick="ulkeDuzenle('${u.id}')">Düzenle</button>
             <button class="btn btn-danger btn-sm" onclick="ulkeSil('${u.id}')">Sil</button>
           </div>
         </div>`).join('');
@@ -391,40 +393,78 @@
       goster('ulke-alert', 'Ülke silindi.');
     };
 
+    window.ulkeDuzenle = (id) => {
+      const ulke = ulkeler.find(u => u.id === id);
+      if (!ulke) return;
+      document.getElementById('ulke-edit-id').value = id;
+      document.getElementById('ulke-ad').value = ulke.ad || '';
+      document.getElementById('ulke-fotograf').value = ulke.fotograf || '';
+      if (ulke.fotograf) {
+        document.getElementById('ulke-fotograf-img').src = ulke.fotograf;
+        document.getElementById('ulke-fotograf-preview').style.display = '';
+        document.getElementById('ulke-upload-area').querySelector('.upload-placeholder').style.display = 'none';
+      }
+      document.getElementById('ulke-form-baslik').textContent = 'Ülke Düzenle';
+      document.getElementById('ulke-kaydet-btn').textContent = 'Değişiklikleri Kaydet';
+      document.getElementById('ulke-iptal-btn').style.display = '';
+      document.getElementById('ulke-form').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    document.getElementById('ulke-iptal-btn').addEventListener('click', () => {
+      document.getElementById('ulke-form').reset();
+      document.getElementById('ulke-edit-id').value = '';
+      document.getElementById('ulke-form-baslik').textContent = 'Yeni Ülke Ekle';
+      document.getElementById('ulke-kaydet-btn').textContent = 'Ülke Ekle';
+      document.getElementById('ulke-iptal-btn').style.display = 'none';
+      fotografKaldir('ulke');
+    });
+
     document.getElementById('ulke-form').addEventListener('submit', async e => {
       e.preventDefault();
-      const btn = e.target.querySelector('button[type=submit]');
+      const btn = document.getElementById('ulke-kaydet-btn');
+      const editId = document.getElementById('ulke-edit-id').value;
+      const eskiBtn = btn.textContent;
       btn.disabled = true; btn.textContent = 'Yükleniyor...';
       try {
-        let fotografUrl = '';
+        let fotografUrl = document.getElementById('ulke-fotograf').value;
         const dosya = document.getElementById('ulke-fotograf-dosya').files[0];
         if (dosya) fotografUrl = await cloudinaryYukle(dosya);
 
-        await addDoc(collection(db, 'ulkeler'), {
-          ad: document.getElementById('ulke-ad').value.trim(),
-          aciklama: '',
-          fotograf: fotografUrl,
-          sira: parseInt(document.getElementById('ulke-sira').value) || 1,
-          olusturuldu: serverTimestamp()
-        });
+        if (editId) {
+          await updateDoc(doc(db, 'ulkeler', editId), {
+            ad: document.getElementById('ulke-ad').value.trim(),
+            fotograf: fotografUrl
+          });
+          document.getElementById('ulke-edit-id').value = '';
+          document.getElementById('ulke-form-baslik').textContent = 'Yeni Ülke Ekle';
+          document.getElementById('ulke-kaydet-btn').textContent = 'Ülke Ekle';
+          document.getElementById('ulke-iptal-btn').style.display = 'none';
+          goster('ulke-alert', 'Ülke güncellendi!');
+        } else {
+          await addDoc(collection(db, 'ulkeler'), {
+            ad: document.getElementById('ulke-ad').value.trim(),
+            aciklama: '',
+            fotograf: fotografUrl,
+            olusturuldu: serverTimestamp()
+          });
+          goster('ulke-alert', 'Ülke başarıyla eklendi!');
+        }
         e.target.reset();
         fotografKaldir('ulke');
-        document.getElementById('ulke-sira').value = 1;
         await ulkeleriYukle();
         selectleriDoldur();
-        goster('ulke-alert', 'Ülke başarıyla eklendi!');
       } catch (err) {
         goster('ulke-alert', 'Hata oluştu: ' + err.message, 'error');
       } finally {
-        btn.disabled = false; btn.textContent = 'Ülke Ekle';
+        btn.disabled = false; btn.textContent = eskiBtn;
       }
     });
 
     // ===== İLLER =====
     async function illeriYukle() {
-      const q = query(collection(db, 'iller'), orderBy('sira'));
-      const snap = await getDocs(q);
+      const snap = await getDocs(collection(db, 'iller'));
       iller = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      iller.sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
       renderIller();
     }
 
@@ -440,9 +480,10 @@
         <div class="list-item">
           <div class="list-item-info">
             <h4>${il.ad}</h4>
-            <p>${ulke ? ulke.ad : ''} ${il.aciklama ? '— ' + il.aciklama : ''}</p>
+            <p>${ulke ? ulke.ad : ''}${il.aciklama ? ' — ' + il.aciklama : ''}</p>
           </div>
           <div class="list-item-actions">
+            <button class="btn btn-secondary btn-sm" onclick="ilDuzenle('${il.id}')">Düzenle</button>
             <button class="btn btn-danger btn-sm" onclick="ilSil('${il.id}')">Sil</button>
           </div>
         </div>`;
@@ -457,46 +498,85 @@
       goster('il-alert', 'İl silindi.');
     };
 
+    window.ilDuzenle = (id) => {
+      const il = iller.find(i => i.id === id);
+      if (!il) return;
+      document.getElementById('il-edit-id').value = id;
+      document.getElementById('il-ulke').value = il.ulkeId || '';
+      document.getElementById('il-ad').value = il.ad || '';
+      document.getElementById('il-aciklama').value = il.aciklama || '';
+      document.getElementById('il-fotograf').value = il.fotograf || '';
+      if (il.fotograf) {
+        document.getElementById('il-fotograf-img').src = il.fotograf;
+        document.getElementById('il-fotograf-preview').style.display = '';
+        document.getElementById('il-upload-area').querySelector('.upload-placeholder').style.display = 'none';
+      }
+      document.getElementById('il-form-baslik').textContent = 'İl Düzenle';
+      document.getElementById('il-kaydet-btn').textContent = 'Değişiklikleri Kaydet';
+      document.getElementById('il-iptal-btn').style.display = '';
+      document.getElementById('il-form').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    document.getElementById('il-iptal-btn').addEventListener('click', () => {
+      document.getElementById('il-form').reset();
+      document.getElementById('il-edit-id').value = '';
+      document.getElementById('il-form-baslik').textContent = 'Yeni İl Ekle';
+      document.getElementById('il-kaydet-btn').textContent = 'İl Ekle';
+      document.getElementById('il-iptal-btn').style.display = 'none';
+      fotografKaldir('il');
+    });
+
     document.getElementById('il-form').addEventListener('submit', async e => {
       e.preventDefault();
-      const btn = e.target.querySelector('button[type=submit]');
+      const btn = document.getElementById('il-kaydet-btn');
+      const editId = document.getElementById('il-edit-id').value;
+      const eskiBtn = btn.textContent;
       btn.disabled = true; btn.textContent = 'Yükleniyor...';
       try {
-        let fotografUrl = '';
+        let fotografUrl = document.getElementById('il-fotograf').value;
         const dosya = document.getElementById('il-fotograf-dosya').files[0];
         if (dosya) fotografUrl = await cloudinaryYukle(dosya);
 
-        await addDoc(collection(db, 'iller'), {
+        const data = {
           ulkeId: document.getElementById('il-ulke').value,
           ad: document.getElementById('il-ad').value.trim(),
           aciklama: document.getElementById('il-aciklama').value.trim(),
-          fotograf: fotografUrl,
-          sira: parseInt(document.getElementById('il-sira').value) || 1,
-          olusturuldu: serverTimestamp()
-        });
+          fotograf: fotografUrl
+        };
+
+        if (editId) {
+          await updateDoc(doc(db, 'iller', editId), data);
+          document.getElementById('il-edit-id').value = '';
+          document.getElementById('il-form-baslik').textContent = 'Yeni İl Ekle';
+          document.getElementById('il-kaydet-btn').textContent = 'İl Ekle';
+          document.getElementById('il-iptal-btn').style.display = 'none';
+          goster('il-alert', 'İl güncellendi!');
+        } else {
+          data.olusturuldu = serverTimestamp();
+          await addDoc(collection(db, 'iller'), data);
+          goster('il-alert', 'İl başarıyla eklendi!');
+        }
         e.target.reset();
         fotografKaldir('il');
-        document.getElementById('il-sira').value = 1;
         await illeriYukle();
         selectleriDoldur();
-        goster('il-alert', 'İl başarıyla eklendi!');
       } catch (err) {
         goster('il-alert', 'Hata oluştu: ' + err.message, 'error');
       } finally {
-        btn.disabled = false; btn.textContent = 'İl Ekle';
+        btn.disabled = false; btn.textContent = eskiBtn;
       }
     });
 
     // ===== İLÇELER =====
     async function ilceleriYukle(filtreIlId = '') {
-      let q;
+      let snap;
       if (filtreIlId) {
-        q = query(collection(db, 'ilceler'), where('ilId', '==', filtreIlId), orderBy('sira'));
+        snap = await getDocs(query(collection(db, 'ilceler'), where('ilId', '==', filtreIlId)));
       } else {
-        q = query(collection(db, 'ilceler'), orderBy('sira'));
+        snap = await getDocs(collection(db, 'ilceler'));
       }
-      const snap = await getDocs(q);
       ilceler = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      ilceler.sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
       renderIlceler();
     }
 
@@ -539,7 +619,6 @@
       document.getElementById('ilce-fotograf').value = ilce.fotograf || '';
       document.getElementById('ilce-harita').value = ilce.haritaEmbed || '';
       document.getElementById('ilce-instagram').value = ilce.instagram || '';
-      document.getElementById('ilce-sira').value = ilce.sira || 1;
 
       // Mevcut fotoğraf varsa göster
       if (ilce.fotograf) {
@@ -566,7 +645,7 @@
       document.getElementById('ilce-edit-id').value = '';
       document.getElementById('ilce-kaydet-btn').textContent = 'İlçe Ekle';
       document.getElementById('ilce-iptal-btn').style.display = 'none';
-      document.getElementById('ilce-sira').value = 1;
+      fotografKaldir('ilce');
     });
 
     document.getElementById('ilce-form').addEventListener('submit', async e => {
@@ -587,8 +666,7 @@
           aciklama: document.getElementById('ilce-aciklama').value.trim(),
           fotograf: fotografUrl,
           haritaEmbed: document.getElementById('ilce-harita').value.trim(),
-          instagram: document.getElementById('ilce-instagram').value.trim(),
-          sira: parseInt(document.getElementById('ilce-sira').value) || 1
+          instagram: document.getElementById('ilce-instagram').value.trim()
         };
 
         if (editId) {
@@ -604,7 +682,6 @@
         }
         e.target.reset();
         fotografKaldir('ilce');
-        document.getElementById('ilce-sira').value = 1;
         await ilceleriYukle();
       } catch (err) {
         goster('ilce-alert', 'Hata: ' + err.message, 'error');
