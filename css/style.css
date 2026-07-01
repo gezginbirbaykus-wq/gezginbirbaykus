@@ -663,6 +663,41 @@ img { max-width: 100%; display: block; }
   z-index: 3;
 }
 
+/* Story preview: kare */
+.story-preview {
+  height: 160px;
+}
+
+.story-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Kapak preview: geniş banner */
+.kapak-preview {
+  height: 180px;
+}
+
+.kapak-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Foto alan başlığı */
+.foto-alan-baslik {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.foto-alan-ikon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
 .upload-edit-btn {
   background: rgba(0,0,0,0.65);
   color: #fff;

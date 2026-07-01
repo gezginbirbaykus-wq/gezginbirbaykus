@@ -126,8 +126,8 @@
       document.getElementById('bc-ilce').textContent = ilce.ad;
 
       // Kapak fotosu varsa tam ekran hero, yoksa normal hero
-      if (ilce.fotograf) {
-        document.getElementById('ilce-kapak-foto').src = ilce.fotograf;
+      if (ilce.kapakFotograf) {
+        document.getElementById('ilce-kapak-foto').src = ilce.kapakFotograf;
         document.getElementById('ilce-kapak-foto').alt = ilce.ad;
         document.getElementById('ilce-ad').textContent = ilce.ad;
         document.getElementById('ilce-kapak').style.display = '';

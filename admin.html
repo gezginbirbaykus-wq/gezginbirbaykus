@@ -179,23 +179,57 @@
               <label>Tanıtım Yazısı *</label>
               <textarea id="ilce-aciklama" required placeholder="İlçeyi tanıtın..."></textarea>
             </div>
+
+            <!-- STORY FOTOSU -->
             <div class="form-group">
-              <label>Kapak Fotoğrafı <small style="font-weight:400;text-transform:none;">(story kartında ve sayfanın üstünde görünür)</small></label>
-              <div class="upload-area" id="ilce-upload-area">
-                <input type="file" id="ilce-fotograf-dosya" accept="image/*" class="upload-input" />
-                <div class="upload-placeholder">
-                  <span class="upload-icon">📷</span>
-                  <span>Fotoğraf seç veya sürükle</span>
+              <div class="foto-alan-baslik">
+                <span class="foto-alan-ikon">⭕</span>
+                <div>
+                  <label style="margin-bottom:2px;">Story Fotosu</label>
+                  <small style="display:block;color:var(--text-muted);font-size:0.75rem;">Yuvarlak kartta görünür — 1:1 kare</small>
                 </div>
-                <div class="upload-preview" id="ilce-fotograf-preview" style="display:none;">
-                  <img id="ilce-fotograf-img" src="" alt="" />
+              </div>
+              <div class="upload-area" id="story-upload-area">
+                <input type="file" id="story-fotograf-dosya" accept="image/*" class="upload-input" />
+                <div class="upload-placeholder">
+                  <span class="upload-icon">⭕</span>
+                  <span>Fotoğraf seç</span>
+                </div>
+                <div class="upload-preview story-preview" id="story-fotograf-preview" style="display:none;">
+                  <img id="story-fotograf-img" src="" alt="" />
                   <div class="upload-preview-actions">
-                    <button type="button" class="upload-edit-btn" onclick="kirpmaAc('kapak')">✂️ Kırp / Düzenle</button>
-                    <button type="button" class="upload-remove" onclick="fotografKaldir('ilce')">✕</button>
+                    <button type="button" class="upload-edit-btn" onclick="kirpmaAc('story')">✂️ Düzenle</button>
+                    <button type="button" class="upload-remove" onclick="storyFotoKaldir()">✕</button>
                   </div>
                 </div>
               </div>
               <input type="hidden" id="ilce-fotograf" />
+            </div>
+
+            <!-- KAPAK FOTOSU -->
+            <div class="form-group">
+              <div class="foto-alan-baslik">
+                <span class="foto-alan-ikon">🖼️</span>
+                <div>
+                  <label style="margin-bottom:2px;">Kapak Fotoğrafı</label>
+                  <small style="display:block;color:var(--text-muted);font-size:0.75rem;">Sayfa başındaki geniş banner — 16:9 yatay</small>
+                </div>
+              </div>
+              <div class="upload-area" id="kapak-upload-area">
+                <input type="file" id="kapak-fotograf-dosya" accept="image/*" class="upload-input" />
+                <div class="upload-placeholder">
+                  <span class="upload-icon">🖼️</span>
+                  <span>Fotoğraf seç</span>
+                </div>
+                <div class="upload-preview kapak-preview" id="kapak-fotograf-preview" style="display:none;">
+                  <img id="kapak-fotograf-img" src="" alt="" />
+                  <div class="upload-preview-actions">
+                    <button type="button" class="upload-edit-btn" onclick="kirpmaAc('kapak')">✂️ Düzenle</button>
+                    <button type="button" class="upload-remove" onclick="kapakFotoKaldir()">✕</button>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" id="ilce-kapak-fotograf" />
             </div>
 
             <div class="form-group">
@@ -249,7 +283,7 @@
   <div id="kirpma-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.88);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;">
     <div style="background:var(--bg-card);border-radius:20px;padding:24px;max-width:720px;width:100%;max-height:90vh;display:flex;flex-direction:column;gap:16px;">
       <div style="display:flex;align-items:center;justify-content:space-between;">
-        <h3 style="font-family:'Sanchez',serif;font-style:italic;color:var(--brown);font-size:1.1rem;">Fotoğrafı Düzenle</h3>
+        <h3 id="kirpma-baslik" style="font-family:'Sanchez',serif;font-style:italic;color:var(--brown);font-size:1.1rem;">Fotoğrafı Düzenle</h3>
         <button onclick="kirpmaKapat()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">✕</button>
       </div>
       <div style="overflow:auto;max-height:50vh;border-radius:10px;background:#111;">
@@ -382,9 +416,42 @@
       document.getElementById(`${prefix}-upload-area`).querySelector('.upload-placeholder').style.display = '';
     };
 
+    // Story ve kapak ayrı upload dinleyicileri
+    function uploadDinleBasit(inputId, imgId, previewId, areaId, hiddenId, kirpmaHedefAdi) {
+      document.getElementById(inputId).addEventListener('change', (e) => {
+        const dosya = e.target.files[0];
+        if (!dosya) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          document.getElementById(imgId).src = ev.target.result;
+          document.getElementById(previewId).style.display = '';
+          document.getElementById(areaId).querySelector('.upload-placeholder').style.display = 'none';
+          kirpmaAc(kirpmaHedefAdi, ev.target.result);
+        };
+        reader.readAsDataURL(dosya);
+      });
+    }
+
     uploadDinle('ulke');
     uploadDinle('il');
-    uploadDinle('ilce');
+    uploadDinleBasit('story-fotograf-dosya', 'story-fotograf-img', 'story-fotograf-preview', 'story-upload-area', 'ilce-fotograf', 'story');
+    uploadDinleBasit('kapak-fotograf-dosya', 'kapak-fotograf-img', 'kapak-fotograf-preview', 'kapak-upload-area', 'ilce-kapak-fotograf', 'kapak');
+
+    window.storyFotoKaldir = () => {
+      document.getElementById('story-fotograf-dosya').value = '';
+      document.getElementById('ilce-fotograf').value = '';
+      document.getElementById('story-fotograf-img').src = '';
+      document.getElementById('story-fotograf-preview').style.display = 'none';
+      document.getElementById('story-upload-area').querySelector('.upload-placeholder').style.display = '';
+    };
+
+    window.kapakFotoKaldir = () => {
+      document.getElementById('kapak-fotograf-dosya').value = '';
+      document.getElementById('ilce-kapak-fotograf').value = '';
+      document.getElementById('kapak-fotograf-img').src = '';
+      document.getElementById('kapak-fotograf-preview').style.display = 'none';
+      document.getElementById('kapak-upload-area').querySelector('.upload-placeholder').style.display = '';
+    };
 
     // ===== KIRPMA EDİTÖRÜ =====
     let cropperInst = null;
@@ -404,31 +471,60 @@
     window.kirpmaAc = (hedef, dosyaUrl) => {
       kirpmaHedef = hedef;
       kirpmaCallback = async (url) => {
-        if (hedef === 'kapak') {
+        if (hedef === 'story') {
           document.getElementById('ilce-fotograf').value = url;
-          document.getElementById('ilce-fotograf-img').src = url;
+          document.getElementById('story-fotograf-img').src = url;
+          document.getElementById('story-fotograf-preview').style.display = '';
+          document.getElementById('story-upload-area').querySelector('.upload-placeholder').style.display = 'none';
+        } else if (hedef === 'kapak') {
+          document.getElementById('ilce-kapak-fotograf').value = url;
+          document.getElementById('kapak-fotograf-img').src = url;
+          document.getElementById('kapak-fotograf-preview').style.display = '';
+          document.getElementById('kapak-upload-area').querySelector('.upload-placeholder').style.display = 'none';
         } else {
           icerikFotolar[hedef] = url;
           renderIcerikFotoListesi();
         }
       };
       kirpmaIptalCallback = null;
-      const src = dosyaUrl || (hedef === 'kapak'
-        ? document.getElementById('ilce-fotograf-img').src
-        : icerikFotolar[hedef]);
-      _kirpmaGoster(src, hedef);
+      const src = dosyaUrl || (
+        hedef === 'story' ? document.getElementById('story-fotograf-img').src :
+        hedef === 'kapak' ? document.getElementById('kapak-fotograf-img').src :
+        icerikFotolar[hedef]
+      );
+      // Hedefe göre varsayılan oran
+      const varsayilanOran = hedef === 'story' ? 1 : hedef === 'kapak' ? 16/9 : NaN;
+      _kirpmaGoster(src, hedef, varsayilanOran);
     };
 
-    function _kirpmaGoster(src, hedef) {
+    function _kirpmaGoster(src, hedef, varsayilanOran) {
       kirpmaHedef = hedef;
       const modal = document.getElementById('kirpma-modal');
       const img = document.getElementById('kirpma-img');
       modal.style.display = 'flex';
       if (cropperInst) { cropperInst.destroy(); cropperInst = null; }
       img.src = src;
+      // Oran butonlarını güncelle
+      const oran = varsayilanOran !== undefined ? varsayilanOran : NaN;
+      document.querySelectorAll('.kirpma-oran-btn[data-oran]').forEach(b => {
+        b.classList.remove('active');
+        const bOran = b.dataset.oran === 'serbest' ? NaN :
+                      b.dataset.oran === '1' ? 1 :
+                      b.dataset.oran === '16:9' ? 16/9 :
+                      b.dataset.oran === '4:3' ? 4/3 :
+                      b.dataset.oran === '9:16' ? 9/16 : NaN;
+        if ((isNaN(oran) && isNaN(bOran)) || bOran === oran) b.classList.add('active');
+      });
+      // Başlığı güncelle
+      const baslikEl = document.getElementById('kirpma-baslik');
+      if (baslikEl) {
+        baslikEl.textContent = hedef === 'story' ? 'Story Fotosu Düzenle (1:1)' :
+                               hedef === 'kapak' ? 'Kapak Fotosu Düzenle (16:9)' : 'Fotoğraf Düzenle';
+      }
       img.onload = () => {
         cropperInst = new Cropper(img, {
           viewMode: 1, autoCropArea: 1,
+          aspectRatio: isNaN(oran) ? NaN : oran,
           movable: true, zoomable: true,
           rotatable: true, scalable: true, responsive: true
         });
@@ -858,7 +954,6 @@
       document.getElementById('ilce-edit-id').value = id;
       document.getElementById('ilce-ad').value = ilce.ad || '';
       document.getElementById('ilce-aciklama').value = ilce.aciklama || '';
-      document.getElementById('ilce-fotograf').value = ilce.fotograf || '';
       document.getElementById('ilce-harita').value = ilce.haritaEmbed || '';
       document.getElementById('ilce-instagram').value = ilce.instagram || '';
 
@@ -866,11 +961,26 @@
       icerikFotolar = ilce.icerikFotolar || [];
       renderIcerikFotoListesi();
 
-      // Mevcut kapak fotoğraf varsa göster
+      // Story fotosu
+      document.getElementById('ilce-fotograf').value = ilce.fotograf || '';
       if (ilce.fotograf) {
-        document.getElementById('ilce-fotograf-img').src = ilce.fotograf;
-        document.getElementById('ilce-fotograf-preview').style.display = '';
-        document.getElementById('ilce-upload-area').querySelector('.upload-placeholder').style.display = 'none';
+        document.getElementById('story-fotograf-img').src = ilce.fotograf;
+        document.getElementById('story-fotograf-preview').style.display = '';
+        document.getElementById('story-upload-area').querySelector('.upload-placeholder').style.display = 'none';
+      } else {
+        document.getElementById('story-fotograf-preview').style.display = 'none';
+        document.getElementById('story-upload-area').querySelector('.upload-placeholder').style.display = '';
+      }
+
+      // Kapak fotosu
+      document.getElementById('ilce-kapak-fotograf').value = ilce.kapakFotograf || '';
+      if (ilce.kapakFotograf) {
+        document.getElementById('kapak-fotograf-img').src = ilce.kapakFotograf;
+        document.getElementById('kapak-fotograf-preview').style.display = '';
+        document.getElementById('kapak-upload-area').querySelector('.upload-placeholder').style.display = 'none';
+      } else {
+        document.getElementById('kapak-fotograf-preview').style.display = 'none';
+        document.getElementById('kapak-upload-area').querySelector('.upload-placeholder').style.display = '';
       }
 
       // Ülke seçimi
@@ -891,7 +1001,8 @@
       document.getElementById('ilce-edit-id').value = '';
       document.getElementById('ilce-kaydet-btn').textContent = 'İlçe Ekle';
       document.getElementById('ilce-iptal-btn').style.display = 'none';
-      fotografKaldir('ilce');
+      storyFotoKaldir();
+      kapakFotoKaldir();
       icerikFotolariSifirla();
     });
 
@@ -900,18 +1011,15 @@
       const btn = document.getElementById('ilce-kaydet-btn');
       const editId = document.getElementById('ilce-edit-id').value;
       const eskiBtn = btn.textContent;
-      btn.disabled = true; btn.textContent = 'Yükleniyor...';
+      btn.disabled = true; btn.textContent = 'Kaydediliyor...';
 
       try {
-        let fotografUrl = document.getElementById('ilce-fotograf').value;
-        const dosya = document.getElementById('ilce-fotograf-dosya').files[0];
-        if (dosya) fotografUrl = await cloudinaryYukle(dosya);
-
         const data = {
           ilId: document.getElementById('ilce-il').value,
           ad: document.getElementById('ilce-ad').value.trim(),
           aciklama: document.getElementById('ilce-aciklama').value.trim(),
-          fotograf: fotografUrl,
+          fotograf: document.getElementById('ilce-fotograf').value,
+          kapakFotograf: document.getElementById('ilce-kapak-fotograf').value,
           icerikFotolar: icerikFotolar,
           haritaEmbed: document.getElementById('ilce-harita').value.trim(),
           instagram: document.getElementById('ilce-instagram').value.trim()
