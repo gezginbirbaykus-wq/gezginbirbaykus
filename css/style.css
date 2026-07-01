@@ -589,21 +589,26 @@ img { max-width: 100%; display: block; }
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 10px 12px;
+  transition: border-color 0.2s;
 }
 
+.icerik-foto-item:hover { border-color: var(--brown-40); }
+
 .icerik-foto-item img {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   object-fit: cover;
   border-radius: 8px;
   flex-shrink: 0;
+  transition: opacity 0.2s;
 }
 
 .icerik-foto-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  min-width: 0;
 }
 
 .icerik-foto-etiket {
@@ -612,12 +617,41 @@ img { max-width: 100%; display: block; }
   font-weight: 700;
   color: var(--brown);
   background: var(--brown-10);
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
   width: fit-content;
-  cursor: pointer;
+  cursor: copy;
   user-select: all;
+  transition: background 0.2s;
 }
+
+.icerik-foto-etiket:hover { background: var(--brown-20); }
+
+.icerik-foto-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.icerik-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: var(--text-muted);
+}
+
+.icerik-btn:hover:not(:disabled) { background: var(--brown-10); border-color: var(--brown-40); color: var(--brown); }
+.icerik-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.icerik-btn-degistir:hover:not(:disabled) { background: #e8f4fd; border-color: #3498db; color: #2980b9; }
+.icerik-btn-sil:hover:not(:disabled) { background: #fde8e8; border-color: #e74c3c; color: #c0392b; }
 
 .ilce-section { margin-bottom: 48px; }
 

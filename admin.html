@@ -197,12 +197,12 @@
             <div class="form-group">
               <label>İçerik Fotoğrafları <small style="font-weight:400;text-transform:none;">(yazıda [foto:1], [foto:2]... ile kullan)</small></label>
               <div id="icerik-foto-listesi" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px;"></div>
-              <div class="upload-area" id="icerik-upload-area" style="cursor:pointer;">
-                <input type="file" id="icerik-fotograf-dosya" accept="image/*" class="upload-input" multiple />
-                <div class="upload-placeholder">
-                  <span class="upload-icon">🖼️</span>
-                  <span>Fotoğraf ekle (birden fazla seçebilirsin)</span>
-                </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <label class="btn btn-secondary btn-sm" id="icerik-ekle-btn" style="cursor:pointer;position:relative;">
+                  + Fotoğraf Ekle
+                  <input type="file" id="icerik-fotograf-dosya" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer;" />
+                </label>
+                <span style="font-size:0.78rem;color:var(--text-muted);">Birden fazla seçebilirsin</span>
               </div>
               <input type="hidden" id="ilce-icerik-fotolar" />
             </div>
@@ -348,42 +348,71 @@
     uploadDinle('ilce');
 
     // ===== İÇERİK FOTOĞRAFLARI =====
-    let icerikFotolar = []; // [{url, preview}]
+    let icerikFotolar = []; // string[] — Cloudinary URL'leri
 
     document.getElementById('icerik-fotograf-dosya').addEventListener('change', async (e) => {
       const dosyalar = Array.from(e.target.files);
       if (!dosyalar.length) return;
-      renderIcerikFotoPlaceholders(dosyalar.length);
+      const btn = document.getElementById('icerik-ekle-btn');
+      btn.disabled = true; btn.textContent = 'Yükleniyor...';
       for (const dosya of dosyalar) {
         const url = await cloudinaryYukle(dosya);
         icerikFotolar.push(url);
-        renderIcerikFotoListesi();
       }
+      renderIcerikFotoListesi();
       e.target.value = '';
+      btn.disabled = false; btn.textContent = '+ Fotoğraf Ekle';
     });
-
-    function renderIcerikFotoPlaceholders(sayi) {
-      // Upload sırasında bekleme göstergesi
-    }
 
     function renderIcerikFotoListesi() {
       const liste = document.getElementById('icerik-foto-listesi');
       document.getElementById('ilce-icerik-fotolar').value = JSON.stringify(icerikFotolar);
-      if (!icerikFotolar.length) { liste.innerHTML = ''; return; }
+      if (!icerikFotolar.length) {
+        liste.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted);padding:4px 0;">Henüz fotoğraf eklenmedi.</p>';
+        return;
+      }
       liste.innerHTML = icerikFotolar.map((url, i) => `
-        <div class="icerik-foto-item">
+        <div class="icerik-foto-item" data-idx="${i}">
           <img src="${url}" alt="foto ${i+1}" />
           <div class="icerik-foto-info">
-            <span class="icerik-foto-etiket">[foto:${i+1}]</span>
-            <span style="font-size:0.75rem;color:var(--text-muted);">Yazıya kopyala</span>
+            <span class="icerik-foto-etiket" title="Yazıya kopyala için tıkla" onclick="navigator.clipboard.writeText('[foto:${i+1}]')" style="cursor:copy;">[foto:${i+1}]</span>
+            <span style="font-size:0.72rem;color:var(--text-muted);">tıkla → kopyala</span>
           </div>
-          <button type="button" class="upload-remove" style="position:static;width:28px;height:28px;" onclick="icerikFotoKaldir(${i})">✕</button>
+          <div class="icerik-foto-actions">
+            <button type="button" class="icerik-btn" title="Yukarı taşı" onclick="icerikFotoTasi(${i},-1)" ${i===0?'disabled':''}>↑</button>
+            <button type="button" class="icerik-btn" title="Aşağı taşı" onclick="icerikFotoTasi(${i},1)" ${i===icerikFotolar.length-1?'disabled':''}>↓</button>
+            <button type="button" class="icerik-btn icerik-btn-degistir" title="Değiştir" onclick="icerikFotoDegistir(${i})">🔄</button>
+            <button type="button" class="icerik-btn icerik-btn-sil" title="Sil" onclick="icerikFotoKaldir(${i})">✕</button>
+          </div>
         </div>`).join('');
     }
 
     window.icerikFotoKaldir = (i) => {
       icerikFotolar.splice(i, 1);
       renderIcerikFotoListesi();
+    };
+
+    window.icerikFotoTasi = (i, yon) => {
+      const j = i + yon;
+      if (j < 0 || j >= icerikFotolar.length) return;
+      [icerikFotolar[i], icerikFotolar[j]] = [icerikFotolar[j], icerikFotolar[i]];
+      renderIcerikFotoListesi();
+    };
+
+    window.icerikFotoDegistir = (i) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = async () => {
+        const dosya = input.files[0];
+        if (!dosya) return;
+        const item = document.querySelector(`.icerik-foto-item[data-idx="${i}"] img`);
+        if (item) item.style.opacity = '0.4';
+        const url = await cloudinaryYukle(dosya);
+        icerikFotolar[i] = url;
+        renderIcerikFotoListesi();
+      };
+      input.click();
     };
 
     function icerikFotolariSifirla() {
