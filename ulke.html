@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gezginbirbaykus</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-area">
+        <img src="assets/logo.png" alt="Gezginbirbaykus Logo" onerror="this.style.display='none'" />
+        <span class="logo-text">Gezginbirbaykus</span>
+      </a>
+      <nav class="main-nav">
+        <a href="index.html">Ana Sayfa</a>
+        <a href="index.html#ulkeler">Keşfet</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb" id="breadcrumb">
+    <a href="index.html">Ana Sayfa</a>
+    <span>/</span>
+    <span id="bc-ulke">Yükleniyor...</span>
+  </div>
+
+  <!-- HERO -->
+  <section class="ilce-header" id="ulke-hero" style="display:none;">
+    <h1 id="ulke-ad"></h1>
+    <p class="ilce-subtitle" id="ulke-aciklama"></p>
+  </section>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <h2 class="section-title" id="iller-baslik">İller</h2>
+    <div id="il-listesi" class="cards-grid">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Yükleniyor...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p class="footer-logo">Gezginbirbaykus</p>
+    <p>© 2024 — Tüm hakları saklıdır.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { doc, getDoc, collection, getDocs, query, orderBy, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const params = new URLSearchParams(window.location.search);
+    const ulkeId = params.get('id');
+
+    async function yukle() {
+      if (!ulkeId) { window.location = 'index.html'; return; }
+
+      // Ülke bilgisi
+      const ulkeDoc = await getDoc(doc(db, 'ulkeler', ulkeId));
+      if (!ulkeDoc.exists()) { window.location = 'index.html'; return; }
+
+      const ulke = ulkeDoc.data();
+      document.title = `${ulke.ad} — Gezginbirbaykus`;
+      document.getElementById('bc-ulke').textContent = ulke.ad;
+      document.getElementById('ulke-ad').textContent = ulke.ad;
+      document.getElementById('ulke-aciklama').textContent = ulke.aciklama || '';
+      document.getElementById('ulke-hero').style.display = '';
+      document.getElementById('iller-baslik').textContent = `${ulke.ad} — İller`;
+
+      // İller
+      const liste = document.getElementById('il-listesi');
+      const q = query(collection(db, 'iller'), where('ulkeId', '==', ulkeId), orderBy('sira'));
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        liste.innerHTML = `<div class="empty-state"><div class="owl-icon">🦉</div><p>Henüz il eklenmemiş.</p></div>`;
+        return;
+      }
+
+      liste.innerHTML = '';
+      snapshot.forEach(d => {
+        const il = d.data();
+        liste.innerHTML += `
+          <a href="il.html?id=${d.id}" class="card">
+            <div class="card-img">
+              ${il.fotograf ? `<img src="${il.fotograf}" alt="${il.ad}" style="width:100%;height:100%;object-fit:cover;" />` : '🏙️'}
+            </div>
+            <div class="card-body">
+              <h3>${il.ad}</h3>
+              <p>${il.aciklama || ''}</p>
+            </div>
+            <div class="card-footer">
+              <span>İlçeleri Gör →</span>
+            </div>
+          </a>`;
+      });
+    }
+
+    yukle();
+  </script>
+
+</body>
+</html>

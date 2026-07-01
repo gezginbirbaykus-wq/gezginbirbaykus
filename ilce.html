@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gezginbirbaykus</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-area">
+        <img src="assets/logo.png" alt="Gezginbirbaykus Logo" onerror="this.style.display='none'" />
+        <span class="logo-text">Gezginbirbaykus</span>
+      </a>
+      <nav class="main-nav">
+        <a href="index.html">Ana Sayfa</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <a href="index.html">Ana Sayfa</a>
+    <span>/</span>
+    <a href="#" id="bc-ulke-link">Ülke</a>
+    <span>/</span>
+    <a href="#" id="bc-il-link">İl</a>
+    <span>/</span>
+    <span id="bc-ilce">Yükleniyor...</span>
+  </div>
+
+  <!-- HERO -->
+  <section class="ilce-header" id="ilce-hero" style="display:none;">
+    <h1 id="ilce-ad"></h1>
+    <p class="ilce-subtitle" id="ilce-il-adi"></p>
+  </section>
+
+  <!-- CONTENT -->
+  <div class="ilce-body" id="ilce-icerik" style="display:none;">
+
+    <!-- Tanıtım -->
+    <div class="ilce-section">
+      <h2>📖 Tanıtım</h2>
+      <p class="ilce-description" id="ilce-aciklama"></p>
+    </div>
+
+    <!-- Harita -->
+    <div class="ilce-section" id="harita-bolum" style="display:none;">
+      <h2>🗺️ Harita</h2>
+      <div class="map-wrapper" id="harita-wrapper"></div>
+    </div>
+
+    <!-- Instagram -->
+    <div class="ilce-section" id="instagram-bolum" style="display:none;">
+      <h2>📸 Instagram</h2>
+      <a id="instagram-btn" href="#" target="_blank" rel="noopener noreferrer" class="instagram-btn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+        Instagram'da Takip Et
+      </a>
+    </div>
+
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="yukleniyor">
+    <div class="spinner"></div>
+    <p>Yükleniyor...</p>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p class="footer-logo">Gezginbirbaykus</p>
+    <p>© 2024 — Tüm hakları saklıdır.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const params = new URLSearchParams(window.location.search);
+    const ilceId = params.get('id');
+
+    async function yukle() {
+      if (!ilceId) { window.location = 'index.html'; return; }
+
+      const ilceDoc = await getDoc(doc(db, 'ilceler', ilceId));
+      if (!ilceDoc.exists()) { window.location = 'index.html'; return; }
+
+      const ilce = ilceDoc.data();
+
+      document.title = `${ilce.ad} — Gezginbirbaykus`;
+      document.getElementById('bc-ilce').textContent = ilce.ad;
+      document.getElementById('ilce-ad').textContent = ilce.ad;
+      document.getElementById('ilce-aciklama').textContent = ilce.aciklama || '';
+      document.getElementById('ilce-hero').style.display = '';
+      document.getElementById('ilce-icerik').style.display = '';
+      document.getElementById('yukleniyor').style.display = 'none';
+
+      // Breadcrumb - İl
+      if (ilce.ilId) {
+        const ilDoc = await getDoc(doc(db, 'iller', ilce.ilId));
+        if (ilDoc.exists()) {
+          const il = ilDoc.data();
+          const ilLink = document.getElementById('bc-il-link');
+          ilLink.textContent = il.ad;
+          ilLink.href = `il.html?id=${ilce.ilId}`;
+          document.getElementById('ilce-il-adi').textContent = il.ad;
+
+          // Breadcrumb - Ülke
+          if (il.ulkeId) {
+            const ulkeDoc = await getDoc(doc(db, 'ulkeler', il.ulkeId));
+            if (ulkeDoc.exists()) {
+              const ulkeLink = document.getElementById('bc-ulke-link');
+              ulkeLink.textContent = ulkeDoc.data().ad;
+              ulkeLink.href = `ulke.html?id=${il.ulkeId}`;
+            }
+          }
+        }
+      }
+
+      // Harita embed
+      if (ilce.haritaEmbed) {
+        const haritaBolum = document.getElementById('harita-bolum');
+        const haritaWrapper = document.getElementById('harita-wrapper');
+        // Google Maps iframe embed URL'si
+        haritaWrapper.innerHTML = `<iframe src="${ilce.haritaEmbed}" allowfullscreen loading="lazy"></iframe>`;
+        haritaBolum.style.display = '';
+      }
+
+      // Instagram
+      if (ilce.instagram) {
+        const igBolum = document.getElementById('instagram-bolum');
+        const igBtn = document.getElementById('instagram-btn');
+        igBtn.href = ilce.instagram.startsWith('http') ? ilce.instagram : `https://instagram.com/${ilce.instagram.replace('@', '')}`;
+        igBolum.style.display = '';
+      }
+    }
+
+    yukle();
+  </script>
+
+</body>
+</html>

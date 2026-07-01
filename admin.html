@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Gezginbirbaykus</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- GİRİŞ EKRANI -->
+  <div class="admin-login" id="login-ekran">
+    <div class="login-box">
+      <p style="font-size:2.5rem;margin-bottom:8px;">🦉</p>
+      <h2>Admin Girişi</h2>
+      <div id="login-alert"></div>
+      <form id="login-form">
+        <div class="form-group">
+          <label>E-posta</label>
+          <input type="email" id="email" required placeholder="admin@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Şifre</label>
+          <input type="password" id="sifre" required placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn btn-primary">Giriş Yap</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADMİN PANELİ -->
+  <div class="admin-panel" id="admin-panel" style="display:none;">
+
+    <div class="admin-topbar">
+      <h1>🦉 Gezginbirbaykus Admin</h1>
+      <button id="cikis-btn">Çıkış Yap</button>
+    </div>
+
+    <div class="admin-body">
+
+      <!-- TABS -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="ulke">Ülkeler</button>
+        <button class="admin-tab" data-tab="il">İller</button>
+        <button class="admin-tab" data-tab="ilce">İlçeler</button>
+      </div>
+
+      <!-- ===== ÜLKELER TAB ===== -->
+      <div class="tab-panel active" id="tab-ulke">
+        <div class="admin-card">
+          <h3>Yeni Ülke Ekle</h3>
+          <div id="ulke-alert"></div>
+          <form id="ulke-form">
+            <div class="form-group">
+              <label>Ülke Adı *</label>
+              <input type="text" id="ulke-ad" required placeholder="Türkiye" />
+            </div>
+            <div class="form-group">
+              <label>Kısa Açıklama</label>
+              <input type="text" id="ulke-aciklama" placeholder="Kısa bir tanıtım..." />
+            </div>
+            <div class="form-group">
+              <label>Fotoğraf URL (opsiyonel)</label>
+              <input type="url" id="ulke-fotograf" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label>Sıra (sayısal, küçük önce görünür)</label>
+              <input type="number" id="ulke-sira" value="1" min="1" />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:auto;">Ülke Ekle</button>
+          </form>
+        </div>
+
+        <div class="admin-card">
+          <h3>Mevcut Ülkeler</h3>
+          <div id="ulke-listesi">
+            <div class="loading"><div class="spinner"></div><p>Yükleniyor...</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== İLLER TAB ===== -->
+      <div class="tab-panel" id="tab-il">
+        <div class="admin-card">
+          <h3>Yeni İl Ekle</h3>
+          <div id="il-alert"></div>
+          <form id="il-form">
+            <div class="form-group">
+              <label>Ülke *</label>
+              <select id="il-ulke" required>
+                <option value="">— Ülke Seç —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>İl Adı *</label>
+              <input type="text" id="il-ad" required placeholder="İstanbul" />
+            </div>
+            <div class="form-group">
+              <label>Kısa Açıklama</label>
+              <input type="text" id="il-aciklama" placeholder="Kısa bir tanıtım..." />
+            </div>
+            <div class="form-group">
+              <label>Fotoğraf URL (opsiyonel)</label>
+              <input type="url" id="il-fotograf" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label>Sıra</label>
+              <input type="number" id="il-sira" value="1" min="1" />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:auto;">İl Ekle</button>
+          </form>
+        </div>
+
+        <div class="admin-card">
+          <h3>Mevcut İller</h3>
+          <div id="il-listesi">
+            <div class="loading"><div class="spinner"></div><p>Yükleniyor...</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== İLÇELER TAB ===== -->
+      <div class="tab-panel" id="tab-ilce">
+        <div class="admin-card">
+          <h3>Yeni İlçe Ekle / Düzenle</h3>
+          <div id="ilce-alert"></div>
+          <form id="ilce-form">
+            <input type="hidden" id="ilce-edit-id" />
+            <div class="form-group">
+              <label>Ülke *</label>
+              <select id="ilce-ulke" required>
+                <option value="">— Ülke Seç —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>İl *</label>
+              <select id="ilce-il" required>
+                <option value="">— Önce Ülke Seç —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>İlçe Adı *</label>
+              <input type="text" id="ilce-ad" required placeholder="Beşiktaş" />
+            </div>
+            <div class="form-group">
+              <label>Tanıtım Yazısı *</label>
+              <textarea id="ilce-aciklama" required placeholder="İlçeyi tanıtın..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>Fotoğraf URL (opsiyonel)</label>
+              <input type="url" id="ilce-fotograf" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label>Google Maps Embed URL</label>
+              <input type="url" id="ilce-harita" placeholder="https://www.google.com/maps/embed?pb=..." />
+              <small style="color:#6E6E63;font-size:0.8rem;margin-top:4px;display:block;">
+                Google Maps → Paylaş → Haritayı göm → &lt;iframe&gt; içindeki src="..." linkini kopyala
+              </small>
+            </div>
+            <div class="form-group">
+              <label>Instagram Kullanıcı Adı veya URL</label>
+              <input type="text" id="ilce-instagram" placeholder="@kullaniciadi veya https://instagram.com/..." />
+            </div>
+            <div class="form-group">
+              <label>Sıra</label>
+              <input type="number" id="ilce-sira" value="1" min="1" />
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <button type="submit" class="btn btn-primary" style="width:auto;" id="ilce-kaydet-btn">İlçe Ekle</button>
+              <button type="button" class="btn btn-secondary" id="ilce-iptal-btn" style="display:none;">İptal</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="admin-card">
+          <h3>Mevcut İlçeler</h3>
+          <div class="form-group">
+            <label>İl Filtrele</label>
+            <select id="ilce-filtre-il">
+              <option value="">— Tümünü Göster —</option>
+            </select>
+          </div>
+          <div id="ilce-listesi">
+            <div class="loading"><div class="spinner"></div><p>Yükleniyor...</p></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { db, auth } from './js/firebase-config.js';
+    import {
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import {
+      collection, getDocs, addDoc, updateDoc, deleteDoc,
+      doc, query, orderBy, where, serverTimestamp
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    // ===== AUTH =====
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        document.getElementById('login-ekran').style.display = 'none';
+        document.getElementById('admin-panel').style.display = '';
+        baslat();
+      } else {
+        document.getElementById('login-ekran').style.display = '';
+        document.getElementById('admin-panel').style.display = 'none';
+      }
+    });
+
+    document.getElementById('login-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const alertEl = document.getElementById('login-alert');
+      alertEl.innerHTML = '';
+      try {
+        await signInWithEmailAndPassword(auth,
+          document.getElementById('email').value,
+          document.getElementById('sifre').value
+        );
+      } catch (err) {
+        alertEl.innerHTML = `<div class="alert alert-error">Hatalı e-posta veya şifre.</div>`;
+      }
+    });
+
+    document.getElementById('cikis-btn').addEventListener('click', () => signOut(auth));
+
+    // ===== TABS =====
+    document.querySelectorAll('.admin-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    // ===== HELPERS =====
+    function goster(alertId, mesaj, tip = 'success') {
+      const el = document.getElementById(alertId);
+      el.innerHTML = `<div class="alert alert-${tip}">${mesaj}</div>`;
+      setTimeout(() => { el.innerHTML = ''; }, 4000);
+    }
+
+    // ===== BAŞLAT =====
+    let ulkeler = [];
+    let iller = [];
+    let ilceler = [];
+
+    async function baslat() {
+      await ulkeleriYukle();
+      await illeriYukle();
+      await ilceleriYukle();
+      selectleriDoldur();
+    }
+
+    // ===== ÜLKELER =====
+    async function ulkeleriYukle() {
+      const q = query(collection(db, 'ulkeler'), orderBy('sira'));
+      const snap = await getDocs(q);
+      ulkeler = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderUlkeler();
+    }
+
+    function renderUlkeler() {
+      const liste = document.getElementById('ulke-listesi');
+      if (!ulkeler.length) {
+        liste.innerHTML = '<p style="color:#6E6E63;font-size:0.9rem;">Henüz ülke eklenmemiş.</p>';
+        return;
+      }
+      liste.innerHTML = ulkeler.map(u => `
+        <div class="list-item">
+          <div class="list-item-info">
+            <h4>${u.ad}</h4>
+            <p>${u.aciklama || ''}</p>
+          </div>
+          <div class="list-item-actions">
+            <button class="btn btn-danger btn-sm" onclick="ulkeSil('${u.id}')">Sil</button>
+          </div>
+        </div>`).join('');
+    }
+
+    window.ulkeSil = async (id) => {
+      if (!confirm('Bu ülkeyi silmek istediğine emin misin?')) return;
+      await deleteDoc(doc(db, 'ulkeler', id));
+      await ulkeleriYukle();
+      selectleriDoldur();
+      goster('ulke-alert', 'Ülke silindi.');
+    };
+
+    document.getElementById('ulke-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      try {
+        await addDoc(collection(db, 'ulkeler'), {
+          ad: document.getElementById('ulke-ad').value.trim(),
+          aciklama: document.getElementById('ulke-aciklama').value.trim(),
+          fotograf: document.getElementById('ulke-fotograf').value.trim(),
+          sira: parseInt(document.getElementById('ulke-sira').value) || 1,
+          olusturuldu: serverTimestamp()
+        });
+        e.target.reset();
+        document.getElementById('ulke-sira').value = 1;
+        await ulkeleriYukle();
+        selectleriDoldur();
+        goster('ulke-alert', 'Ülke başarıyla eklendi!');
+      } catch (err) {
+        goster('ulke-alert', 'Hata oluştu: ' + err.message, 'error');
+      }
+    });
+
+    // ===== İLLER =====
+    async function illeriYukle() {
+      const q = query(collection(db, 'iller'), orderBy('sira'));
+      const snap = await getDocs(q);
+      iller = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderIller();
+    }
+
+    function renderIller() {
+      const liste = document.getElementById('il-listesi');
+      if (!iller.length) {
+        liste.innerHTML = '<p style="color:#6E6E63;font-size:0.9rem;">Henüz il eklenmemiş.</p>';
+        return;
+      }
+      liste.innerHTML = iller.map(il => {
+        const ulke = ulkeler.find(u => u.id === il.ulkeId);
+        return `
+        <div class="list-item">
+          <div class="list-item-info">
+            <h4>${il.ad}</h4>
+            <p>${ulke ? ulke.ad : ''} ${il.aciklama ? '— ' + il.aciklama : ''}</p>
+          </div>
+          <div class="list-item-actions">
+            <button class="btn btn-danger btn-sm" onclick="ilSil('${il.id}')">Sil</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    window.ilSil = async (id) => {
+      if (!confirm('Bu ili silmek istediğine emin misin?')) return;
+      await deleteDoc(doc(db, 'iller', id));
+      await illeriYukle();
+      selectleriDoldur();
+      goster('il-alert', 'İl silindi.');
+    };
+
+    document.getElementById('il-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      try {
+        await addDoc(collection(db, 'iller'), {
+          ulkeId: document.getElementById('il-ulke').value,
+          ad: document.getElementById('il-ad').value.trim(),
+          aciklama: document.getElementById('il-aciklama').value.trim(),
+          fotograf: document.getElementById('il-fotograf').value.trim(),
+          sira: parseInt(document.getElementById('il-sira').value) || 1,
+          olusturuldu: serverTimestamp()
+        });
+        e.target.reset();
+        document.getElementById('il-sira').value = 1;
+        await illeriYukle();
+        selectleriDoldur();
+        goster('il-alert', 'İl başarıyla eklendi!');
+      } catch (err) {
+        goster('il-alert', 'Hata oluştu: ' + err.message, 'error');
+      }
+    });
+
+    // ===== İLÇELER =====
+    async function ilceleriYukle(filtreIlId = '') {
+      let q;
+      if (filtreIlId) {
+        q = query(collection(db, 'ilceler'), where('ilId', '==', filtreIlId), orderBy('sira'));
+      } else {
+        q = query(collection(db, 'ilceler'), orderBy('sira'));
+      }
+      const snap = await getDocs(q);
+      ilceler = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderIlceler();
+    }
+
+    function renderIlceler() {
+      const liste = document.getElementById('ilce-listesi');
+      if (!ilceler.length) {
+        liste.innerHTML = '<p style="color:#6E6E63;font-size:0.9rem;">Henüz ilçe eklenmemiş.</p>';
+        return;
+      }
+      liste.innerHTML = ilceler.map(ilce => {
+        const il = iller.find(i => i.id === ilce.ilId);
+        return `
+        <div class="list-item">
+          <div class="list-item-info">
+            <h4>${ilce.ad}</h4>
+            <p>${il ? il.ad : ''} — ${(ilce.aciklama || '').substring(0, 60)}...</p>
+          </div>
+          <div class="list-item-actions">
+            <button class="btn btn-secondary btn-sm" onclick="ilceDuzenle('${ilce.id}')">Düzenle</button>
+            <button class="btn btn-danger btn-sm" onclick="ilceSil('${ilce.id}')">Sil</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    window.ilceSil = async (id) => {
+      if (!confirm('Bu ilçeyi silmek istediğine emin misin?')) return;
+      await deleteDoc(doc(db, 'ilceler', id));
+      await ilceleriYukle();
+      goster('ilce-alert', 'İlçe silindi.');
+    };
+
+    window.ilceDuzenle = (id) => {
+      const ilce = ilceler.find(i => i.id === id);
+      if (!ilce) return;
+
+      document.getElementById('ilce-edit-id').value = id;
+      document.getElementById('ilce-ad').value = ilce.ad || '';
+      document.getElementById('ilce-aciklama').value = ilce.aciklama || '';
+      document.getElementById('ilce-fotograf').value = ilce.fotograf || '';
+      document.getElementById('ilce-harita').value = ilce.haritaEmbed || '';
+      document.getElementById('ilce-instagram').value = ilce.instagram || '';
+      document.getElementById('ilce-sira').value = ilce.sira || 1;
+
+      // Ülke seçimi
+      document.getElementById('ilce-ulke').value = '';
+      const il = iller.find(i => i.id === ilce.ilId);
+      if (il) {
+        document.getElementById('ilce-ulke').value = il.ulkeId;
+        ilceFiltreIllerDoldur(il.ulkeId, ilce.ilId);
+      }
+
+      document.getElementById('ilce-kaydet-btn').textContent = 'Değişiklikleri Kaydet';
+      document.getElementById('ilce-iptal-btn').style.display = '';
+      document.getElementById('ilce-form').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    document.getElementById('ilce-iptal-btn').addEventListener('click', () => {
+      document.getElementById('ilce-form').reset();
+      document.getElementById('ilce-edit-id').value = '';
+      document.getElementById('ilce-kaydet-btn').textContent = 'İlçe Ekle';
+      document.getElementById('ilce-iptal-btn').style.display = 'none';
+      document.getElementById('ilce-sira').value = 1;
+    });
+
+    document.getElementById('ilce-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const editId = document.getElementById('ilce-edit-id').value;
+      const data = {
+        ilId: document.getElementById('ilce-il').value,
+        ad: document.getElementById('ilce-ad').value.trim(),
+        aciklama: document.getElementById('ilce-aciklama').value.trim(),
+        fotograf: document.getElementById('ilce-fotograf').value.trim(),
+        haritaEmbed: document.getElementById('ilce-harita').value.trim(),
+        instagram: document.getElementById('ilce-instagram').value.trim(),
+        sira: parseInt(document.getElementById('ilce-sira').value) || 1
+      };
+
+      try {
+        if (editId) {
+          await updateDoc(doc(db, 'ilceler', editId), data);
+          document.getElementById('ilce-edit-id').value = '';
+          document.getElementById('ilce-kaydet-btn').textContent = 'İlçe Ekle';
+          document.getElementById('ilce-iptal-btn').style.display = 'none';
+          goster('ilce-alert', 'İlçe güncellendi!');
+        } else {
+          data.olusturuldu = serverTimestamp();
+          await addDoc(collection(db, 'ilceler'), data);
+          goster('ilce-alert', 'İlçe başarıyla eklendi!');
+        }
+        e.target.reset();
+        document.getElementById('ilce-sira').value = 1;
+        await ilceleriYukle();
+      } catch (err) {
+        goster('ilce-alert', 'Hata: ' + err.message, 'error');
+      }
+    });
+
+    // Filtre
+    document.getElementById('ilce-filtre-il').addEventListener('change', e => {
+      ilceleriYukle(e.target.value);
+    });
+
+    // ===== SELECTLER =====
+    function selectleriDoldur() {
+      // İl formu - ülke select
+      const ilUlkeSelect = document.getElementById('il-ulke');
+      ilUlkeSelect.innerHTML = '<option value="">— Ülke Seç —</option>' +
+        ulkeler.map(u => `<option value="${u.id}">${u.ad}</option>`).join('');
+
+      // İlçe formu - ülke select
+      const ilceUlkeSelect = document.getElementById('ilce-ulke');
+      ilceUlkeSelect.innerHTML = '<option value="">— Ülke Seç —</option>' +
+        ulkeler.map(u => `<option value="${u.id}">${u.ad}</option>`).join('');
+
+      // Filtre - il select
+      const filtreIlSelect = document.getElementById('ilce-filtre-il');
+      filtreIlSelect.innerHTML = '<option value="">— Tümünü Göster —</option>' +
+        iller.map(i => `<option value="${i.id}">${i.ad}</option>`).join('');
+    }
+
+    // İlçe formunda ülke seçilince illeri filtrele
+    document.getElementById('ilce-ulke').addEventListener('change', e => {
+      ilceFiltreIllerDoldur(e.target.value);
+    });
+
+    function ilceFiltreIllerDoldur(ulkeId, seciliIlId = '') {
+      const ilceIlSelect = document.getElementById('ilce-il');
+      const filtrelenmis = iller.filter(i => i.ulkeId === ulkeId);
+      ilceIlSelect.innerHTML = '<option value="">— İl Seç —</option>' +
+        filtrelenmis.map(i => `<option value="${i.id}" ${i.id === seciliIlId ? 'selected' : ''}>${i.ad}</option>`).join('');
+    }
+
+  </script>
+
+</body>
+</html>

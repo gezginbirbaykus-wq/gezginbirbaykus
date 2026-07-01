@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gezginbirbaykus</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-area">
+        <img src="assets/logo.png" alt="Gezginbirbaykus Logo" onerror="this.style.display='none'" />
+        <span class="logo-text">Gezginbirbaykus</span>
+      </a>
+      <nav class="main-nav">
+        <a href="index.html">Ana Sayfa</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb" id="breadcrumb">
+    <a href="index.html">Ana Sayfa</a>
+    <span>/</span>
+    <a href="#" id="bc-ulke-link">Ülke</a>
+    <span>/</span>
+    <span id="bc-il">Yükleniyor...</span>
+  </div>
+
+  <!-- HERO -->
+  <section class="ilce-header" id="il-hero" style="display:none;">
+    <h1 id="il-ad"></h1>
+    <p class="ilce-subtitle" id="il-aciklama"></p>
+  </section>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <h2 class="section-title" id="ilceler-baslik">İlçeler</h2>
+    <div id="ilce-listesi" class="cards-grid">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Yükleniyor...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p class="footer-logo">Gezginbirbaykus</p>
+    <p>© 2024 — Tüm hakları saklıdır.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { doc, getDoc, collection, getDocs, query, orderBy, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const params = new URLSearchParams(window.location.search);
+    const ilId = params.get('id');
+
+    async function yukle() {
+      if (!ilId) { window.location = 'index.html'; return; }
+
+      // İl bilgisi
+      const ilDoc = await getDoc(doc(db, 'iller', ilId));
+      if (!ilDoc.exists()) { window.location = 'index.html'; return; }
+
+      const il = ilDoc.data();
+      document.title = `${il.ad} — Gezginbirbaykus`;
+      document.getElementById('bc-il').textContent = il.ad;
+      document.getElementById('il-ad').textContent = il.ad;
+      document.getElementById('il-aciklama').textContent = il.aciklama || '';
+      document.getElementById('il-hero').style.display = '';
+      document.getElementById('ilceler-baslik').textContent = `${il.ad} — İlçeler`;
+
+      // Ülke breadcrumb
+      if (il.ulkeId) {
+        const ulkeDoc = await getDoc(doc(db, 'ulkeler', il.ulkeId));
+        if (ulkeDoc.exists()) {
+          const link = document.getElementById('bc-ulke-link');
+          link.textContent = ulkeDoc.data().ad;
+          link.href = `ulke.html?id=${il.ulkeId}`;
+        }
+      }
+
+      // İlçeler
+      const liste = document.getElementById('ilce-listesi');
+      const q = query(collection(db, 'ilceler'), where('ilId', '==', ilId), orderBy('sira'));
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        liste.innerHTML = `<div class="empty-state"><div class="owl-icon">🦉</div><p>Henüz ilçe eklenmemiş.</p></div>`;
+        return;
+      }
+
+      liste.innerHTML = '';
+      snapshot.forEach(d => {
+        const ilce = d.data();
+        liste.innerHTML += `
+          <a href="ilce.html?id=${d.id}" class="card">
+            <div class="card-img">
+              ${ilce.fotograf ? `<img src="${ilce.fotograf}" alt="${ilce.ad}" style="width:100%;height:100%;object-fit:cover;" />` : '📍'}
+            </div>
+            <div class="card-body">
+              <h3>${ilce.ad}</h3>
+              <p>${(ilce.aciklama || '').substring(0, 120)}${ilce.aciklama && ilce.aciklama.length > 120 ? '...' : ''}</p>
+            </div>
+            <div class="card-footer">
+              <span>Tanıtımı Oku →</span>
+            </div>
+          </a>`;
+      });
+    }
+
+    yukle();
+  </script>
+
+</body>
+</html>

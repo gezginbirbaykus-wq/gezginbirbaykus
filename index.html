@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gezginbirbaykus — Türkiye'yi Keşfet</title>
+  <meta name="description" content="Türkiye'nin illerini ve ilçelerini keşfet. Gezginbirbaykus ile her köşeyi tanı." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-area">
+        <img src="assets/logo.png" alt="Gezginbirbaykus Logo" onerror="this.style.display='none'" />
+        <span class="logo-text">Gezginbirbaykus</span>
+      </a>
+      <nav class="main-nav">
+        <a href="index.html" class="active">Ana Sayfa</a>
+        <a href="#ulkeler">Keşfet</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>Türkiye'yi Keşfet</h1>
+    <p>İl il, ilçe ilçe; her köşenin hikayesini anlatan bir gezi rehberi.</p>
+  </section>
+
+  <!-- MAIN -->
+  <main class="main-content" id="ulkeler">
+    <h2 class="section-title">Ülkeler</h2>
+
+    <div id="ulke-listesi" class="cards-grid">
+      <!-- Yükleniyor -->
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Yükleniyor...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <p class="footer-logo">Gezginbirbaykus</p>
+    <p>© 2024 — Tüm hakları saklıdır.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { collection, getDocs, orderBy, query } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const liste = document.getElementById('ulke-listesi');
+
+    async function ulkeleriYukle() {
+      try {
+        const q = query(collection(db, 'ulkeler'), orderBy('sira'));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          liste.innerHTML = `
+            <div class="empty-state">
+              <div class="owl-icon">🦉</div>
+              <p>Henüz içerik eklenmemiş. Yakında geliyor!</p>
+            </div>`;
+          return;
+        }
+
+        liste.innerHTML = '';
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          liste.innerHTML += `
+            <a href="ulke.html?id=${doc.id}" class="card">
+              <div class="card-img">
+                ${d.fotograf ? `<img src="${d.fotograf}" alt="${d.ad}" style="width:100%;height:100%;object-fit:cover;" />` : '🌍'}
+              </div>
+              <div class="card-body">
+                <h3>${d.ad}</h3>
+                <p>${d.aciklama || ''}</p>
+              </div>
+              <div class="card-footer">
+                <span>Keşfet →</span>
+              </div>
+            </a>`;
+        });
+      } catch (err) {
+        liste.innerHTML = `<div class="empty-state"><p>Bir hata oluştu. Lütfen sayfayı yenileyin.</p></div>`;
+        console.error(err);
+      }
+    }
+
+    ulkeleriYukle();
+  </script>
+
+</body>
+</html>
