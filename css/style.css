@@ -653,6 +653,52 @@ img { max-width: 100%; display: block; }
 .icerik-btn-degistir:hover:not(:disabled) { background: #e8f4fd; border-color: #3498db; color: #2980b9; }
 .icerik-btn-sil:hover:not(:disabled) { background: #fde8e8; border-color: #e74c3c; color: #c0392b; }
 
+/* ===== UPLOAD PREVIEW ACTIONS ===== */
+.upload-preview-actions {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 3;
+}
+
+.upload-edit-btn {
+  background: rgba(0,0,0,0.65);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  transition: background 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.upload-edit-btn:hover { background: rgba(155,98,64,0.85); }
+
+/* ===== KIRPMA MODAL ===== */
+.kirpma-oran-btn {
+  padding: 5px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.kirpma-oran-btn:hover, .kirpma-oran-btn.active {
+  background: var(--brown);
+  border-color: var(--brown);
+  color: #fff;
+}
+
 .ilce-section { margin-bottom: 48px; }
 
 .ilce-section h2 {
