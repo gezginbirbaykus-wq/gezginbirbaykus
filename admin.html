@@ -119,12 +119,8 @@
               <input type="text" id="il-ad" required placeholder="İstanbul" />
             </div>
             <div class="form-group">
-              <label>Plaka Kodu</label>
-              <input type="number" id="il-plaka" placeholder="10" min="1" max="81" />
-            </div>
-            <div class="form-group">
-              <label>Kısa Açıklama</label>
-              <input type="text" id="il-aciklama" placeholder="Kısa bir tanıtım..." />
+              <label>Plaka / Bölge Kodu <small style="font-weight:400;text-transform:none;">(TR için 10, diğerleri serbest)</small></label>
+              <input type="text" id="il-plaka" placeholder="10 veya BG-01 vb." />
             </div>
             <div class="form-group">
               <label>Fotoğraf</label>
@@ -822,7 +818,7 @@
         <div class="list-item">
           <div class="list-item-info">
             <h4>${il.ad}</h4>
-            <p>${ulke ? ulke.ad : ''}${il.aciklama ? ' — ' + il.aciklama : ''}</p>
+            <p>${ulke ? ulke.ad : ''}${il.plaka ? ' — ' + il.plaka : ''}</p>
           </div>
           <div class="list-item-actions">
             <button class="btn btn-secondary btn-sm" onclick="ilDuzenle('${il.id}')">Düzenle</button>
@@ -846,7 +842,6 @@
       document.getElementById('il-edit-id').value = id;
       document.getElementById('il-ulke').value = il.ulkeId || '';
       document.getElementById('il-ad').value = il.ad || '';
-      document.getElementById('il-aciklama').value = il.aciklama || '';
       document.getElementById('il-plaka').value = il.plaka || '';
       document.getElementById('il-fotograf').value = il.fotograf || '';
       if (il.fotograf) {
@@ -883,8 +878,7 @@
         const data = {
           ulkeId: document.getElementById('il-ulke').value,
           ad: document.getElementById('il-ad').value.trim(),
-          aciklama: document.getElementById('il-aciklama').value.trim(),
-          plaka: document.getElementById('il-plaka').value ? parseInt(document.getElementById('il-plaka').value) : null,
+          plaka: document.getElementById('il-plaka').value.trim(),
           fotograf: fotografUrl
         };
 

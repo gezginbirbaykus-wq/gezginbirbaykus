@@ -89,7 +89,7 @@
       document.title = `${il.ad} — Gezginbirbaykus`;
       document.getElementById('bc-il').textContent = il.ad;
       document.getElementById('il-ad').textContent = il.ad;
-      document.getElementById('il-aciklama').textContent = il.aciklama || '';
+      document.getElementById('il-aciklama').textContent = il.plaka ? `Plaka: ${il.plaka}` : '';
       document.getElementById('il-hero').style.display = '';
       document.getElementById('ilceler-baslik').textContent = `${il.ad} — İlçeler`;
 
