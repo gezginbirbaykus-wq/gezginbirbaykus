@@ -70,8 +70,19 @@
               <input type="text" id="ulke-ad" required placeholder="Türkiye" />
             </div>
             <div class="form-group">
-              <label>Fotoğraf URL (opsiyonel)</label>
-              <input type="url" id="ulke-fotograf" placeholder="https://..." />
+              <label>Fotoğraf</label>
+              <div class="upload-area" id="ulke-upload-area">
+                <input type="file" id="ulke-fotograf-dosya" accept="image/*" class="upload-input" />
+                <div class="upload-placeholder">
+                  <span class="upload-icon">📷</span>
+                  <span>Fotoğraf seç veya sürükle</span>
+                </div>
+                <div class="upload-preview" id="ulke-fotograf-preview" style="display:none;">
+                  <img id="ulke-fotograf-img" src="" alt="" />
+                  <button type="button" class="upload-remove" onclick="fotografKaldir('ulke')">✕</button>
+                </div>
+              </div>
+              <input type="hidden" id="ulke-fotograf" />
             </div>
             <div class="form-group">
               <label>Sıra (sayısal, küçük önce görünür)</label>
@@ -110,8 +121,19 @@
               <input type="text" id="il-aciklama" placeholder="Kısa bir tanıtım..." />
             </div>
             <div class="form-group">
-              <label>Fotoğraf URL (opsiyonel)</label>
-              <input type="url" id="il-fotograf" placeholder="https://..." />
+              <label>Fotoğraf</label>
+              <div class="upload-area" id="il-upload-area">
+                <input type="file" id="il-fotograf-dosya" accept="image/*" class="upload-input" />
+                <div class="upload-placeholder">
+                  <span class="upload-icon">📷</span>
+                  <span>Fotoğraf seç veya sürükle</span>
+                </div>
+                <div class="upload-preview" id="il-fotograf-preview" style="display:none;">
+                  <img id="il-fotograf-img" src="" alt="" />
+                  <button type="button" class="upload-remove" onclick="fotografKaldir('il')">✕</button>
+                </div>
+              </div>
+              <input type="hidden" id="il-fotograf" />
             </div>
             <div class="form-group">
               <label>Sıra</label>
@@ -157,8 +179,19 @@
               <textarea id="ilce-aciklama" required placeholder="İlçeyi tanıtın..."></textarea>
             </div>
             <div class="form-group">
-              <label>Fotoğraf URL (opsiyonel)</label>
-              <input type="url" id="ilce-fotograf" placeholder="https://..." />
+              <label>Fotoğraf</label>
+              <div class="upload-area" id="ilce-upload-area">
+                <input type="file" id="ilce-fotograf-dosya" accept="image/*" class="upload-input" />
+                <div class="upload-placeholder">
+                  <span class="upload-icon">📷</span>
+                  <span>Fotoğraf seç veya sürükle</span>
+                </div>
+                <div class="upload-preview" id="ilce-fotograf-preview" style="display:none;">
+                  <img id="ilce-fotograf-img" src="" alt="" />
+                  <button type="button" class="upload-remove" onclick="fotografKaldir('ilce')">✕</button>
+                </div>
+              </div>
+              <input type="hidden" id="ilce-fotograf" />
             </div>
             <div class="form-group">
               <label>Google Maps Embed URL</label>
@@ -260,6 +293,51 @@
       });
     });
 
+    // ===== CLOUDINARY UPLOAD =====
+    const CLOUD_NAME = 'qfrnbu9y';
+    const UPLOAD_PRESET = 'z01gkjtv';
+
+    async function cloudinaryYukle(dosya) {
+      const formData = new FormData();
+      formData.append('file', dosya);
+      formData.append('upload_preset', UPLOAD_PRESET);
+      formData.append('folder', 'gezginbirbaykus');
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      if (!res.ok) throw new Error('Fotoğraf yüklenemedi');
+      const data = await res.json();
+      return data.secure_url;
+    }
+
+    function uploadDinle(prefix) {
+      const input = document.getElementById(`${prefix}-fotograf-dosya`);
+      input.addEventListener('change', () => {
+        const dosya = input.files[0];
+        if (!dosya) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          document.getElementById(`${prefix}-fotograf-img`).src = e.target.result;
+          document.getElementById(`${prefix}-fotograf-preview`).style.display = '';
+          document.getElementById(`${prefix}-upload-area`).querySelector('.upload-placeholder').style.display = 'none';
+        };
+        reader.readAsDataURL(dosya);
+      });
+    }
+
+    window.fotografKaldir = (prefix) => {
+      document.getElementById(`${prefix}-fotograf-dosya`).value = '';
+      document.getElementById(`${prefix}-fotograf`).value = '';
+      document.getElementById(`${prefix}-fotograf-img`).src = '';
+      document.getElementById(`${prefix}-fotograf-preview`).style.display = 'none';
+      document.getElementById(`${prefix}-upload-area`).querySelector('.upload-placeholder').style.display = '';
+    };
+
+    uploadDinle('ulke');
+    uploadDinle('il');
+    uploadDinle('ilce');
+
     // ===== HELPERS =====
     function goster(alertId, mesaj, tip = 'success') {
       const el = document.getElementById(alertId);
@@ -315,21 +393,30 @@
 
     document.getElementById('ulke-form').addEventListener('submit', async e => {
       e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true; btn.textContent = 'Yükleniyor...';
       try {
+        let fotografUrl = '';
+        const dosya = document.getElementById('ulke-fotograf-dosya').files[0];
+        if (dosya) fotografUrl = await cloudinaryYukle(dosya);
+
         await addDoc(collection(db, 'ulkeler'), {
           ad: document.getElementById('ulke-ad').value.trim(),
           aciklama: '',
-          fotograf: document.getElementById('ulke-fotograf').value.trim(),
+          fotograf: fotografUrl,
           sira: parseInt(document.getElementById('ulke-sira').value) || 1,
           olusturuldu: serverTimestamp()
         });
         e.target.reset();
+        fotografKaldir('ulke');
         document.getElementById('ulke-sira').value = 1;
         await ulkeleriYukle();
         selectleriDoldur();
         goster('ulke-alert', 'Ülke başarıyla eklendi!');
       } catch (err) {
         goster('ulke-alert', 'Hata oluştu: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Ülke Ekle';
       }
     });
 
@@ -372,22 +459,31 @@
 
     document.getElementById('il-form').addEventListener('submit', async e => {
       e.preventDefault();
+      const btn = e.target.querySelector('button[type=submit]');
+      btn.disabled = true; btn.textContent = 'Yükleniyor...';
       try {
+        let fotografUrl = '';
+        const dosya = document.getElementById('il-fotograf-dosya').files[0];
+        if (dosya) fotografUrl = await cloudinaryYukle(dosya);
+
         await addDoc(collection(db, 'iller'), {
           ulkeId: document.getElementById('il-ulke').value,
           ad: document.getElementById('il-ad').value.trim(),
           aciklama: document.getElementById('il-aciklama').value.trim(),
-          fotograf: document.getElementById('il-fotograf').value.trim(),
+          fotograf: fotografUrl,
           sira: parseInt(document.getElementById('il-sira').value) || 1,
           olusturuldu: serverTimestamp()
         });
         e.target.reset();
+        fotografKaldir('il');
         document.getElementById('il-sira').value = 1;
         await illeriYukle();
         selectleriDoldur();
         goster('il-alert', 'İl başarıyla eklendi!');
       } catch (err) {
         goster('il-alert', 'Hata oluştu: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'İl Ekle';
       }
     });
 
@@ -445,6 +541,13 @@
       document.getElementById('ilce-instagram').value = ilce.instagram || '';
       document.getElementById('ilce-sira').value = ilce.sira || 1;
 
+      // Mevcut fotoğraf varsa göster
+      if (ilce.fotograf) {
+        document.getElementById('ilce-fotograf-img').src = ilce.fotograf;
+        document.getElementById('ilce-fotograf-preview').style.display = '';
+        document.getElementById('ilce-upload-area').querySelector('.upload-placeholder').style.display = 'none';
+      }
+
       // Ülke seçimi
       document.getElementById('ilce-ulke').value = '';
       const il = iller.find(i => i.id === ilce.ilId);
@@ -468,18 +571,26 @@
 
     document.getElementById('ilce-form').addEventListener('submit', async e => {
       e.preventDefault();
+      const btn = document.getElementById('ilce-kaydet-btn');
       const editId = document.getElementById('ilce-edit-id').value;
-      const data = {
-        ilId: document.getElementById('ilce-il').value,
-        ad: document.getElementById('ilce-ad').value.trim(),
-        aciklama: document.getElementById('ilce-aciklama').value.trim(),
-        fotograf: document.getElementById('ilce-fotograf').value.trim(),
-        haritaEmbed: document.getElementById('ilce-harita').value.trim(),
-        instagram: document.getElementById('ilce-instagram').value.trim(),
-        sira: parseInt(document.getElementById('ilce-sira').value) || 1
-      };
+      const eskiBtn = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Yükleniyor...';
 
       try {
+        let fotografUrl = document.getElementById('ilce-fotograf').value;
+        const dosya = document.getElementById('ilce-fotograf-dosya').files[0];
+        if (dosya) fotografUrl = await cloudinaryYukle(dosya);
+
+        const data = {
+          ilId: document.getElementById('ilce-il').value,
+          ad: document.getElementById('ilce-ad').value.trim(),
+          aciklama: document.getElementById('ilce-aciklama').value.trim(),
+          fotograf: fotografUrl,
+          haritaEmbed: document.getElementById('ilce-harita').value.trim(),
+          instagram: document.getElementById('ilce-instagram').value.trim(),
+          sira: parseInt(document.getElementById('ilce-sira').value) || 1
+        };
+
         if (editId) {
           await updateDoc(doc(db, 'ilceler', editId), data);
           document.getElementById('ilce-edit-id').value = '';
@@ -492,10 +603,13 @@
           goster('ilce-alert', 'İlçe başarıyla eklendi!');
         }
         e.target.reset();
+        fotografKaldir('ilce');
         document.getElementById('ilce-sira').value = 1;
         await ilceleriYukle();
       } catch (err) {
         goster('ilce-alert', 'Hata: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = eskiBtn;
       }
     });
 
