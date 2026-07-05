@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gezginbirbaykus — Türkiye'yi Keşfet</title>
-  <meta name="description" content="Türkiye'nin illerini ve ilçelerini keşfet. Gezginbirbaykus ile her köşeyi tanı." />
+  <title>Gezginbirbaykus — Dünyanın Her İlçesini Keşfet</title>
+  <meta name="description" content="Dünyanın her ilçesini gezmek isteyen bir baykuş. Türkiye ve dünya illerini, ilçelerini keşfet." />
+  <meta property="og:title" content="Gezginbirbaykus" />
+  <meta property="og:description" content="Dünyanın her ilçesini gezmek isteyen bir baykuş." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://gezginbirbaykus-wq.github.io/gezginbirbaykus/" />
+  <meta name="twitter:card" content="summary" />
   <link rel="stylesheet" href="./css/style.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦉</text></svg>" />
 </head>
@@ -39,7 +44,18 @@
 
   <!-- MAIN -->
   <main class="main-content" id="kesfet">
-    <h2 class="section-title">Keşfet</h2>
+    <div class="kesfet-header">
+      <h2 class="section-title">Keşfet</h2>
+      <div class="arama-wrap">
+        <input type="search" id="arama-input" placeholder="Ülke, il veya ilçe ara..." autocomplete="off" />
+        <span class="arama-icon">🔍</span>
+      </div>
+    </div>
+
+    <div id="arama-sonuclar" style="display:none;">
+      <p class="arama-bilgi" id="arama-bilgi"></p>
+      <div id="arama-liste"></div>
+    </div>
 
     <div id="accordion-root">
       <div class="loading">
@@ -106,6 +122,69 @@
         ilceler.sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
 
         root.innerHTML = '';
+
+        // ===== ARAMA =====
+        const aramaInput = document.getElementById('arama-input');
+        const aramaSonuclar = document.getElementById('arama-sonuclar');
+        const aramaListe = document.getElementById('arama-liste');
+        const aramaBilgi = document.getElementById('arama-bilgi');
+
+        aramaInput.addEventListener('input', () => {
+          const q = aramaInput.value.trim().toLowerCase();
+          if (!q) {
+            aramaSonuclar.style.display = 'none';
+            root.style.display = '';
+            return;
+          }
+          root.style.display = 'none';
+          aramaSonuclar.style.display = '';
+
+          const sonuclar = [];
+
+          // Ülkelerde ara
+          ulkeler.forEach(ulke => {
+            if (ulke.ad.toLowerCase().includes(q)) {
+              sonuclar.push({ tip: 'ulke', ad: ulke.ad, href: `./ulke.html?id=${ulke.id}`, foto: ulke.fotograf, emoji: '🌍' });
+            }
+          });
+
+          // İllerde ara
+          iller.forEach(il => {
+            if (il.ad.toLowerCase().includes(q)) {
+              const ulke = ulkeler.find(u => u.id === il.ulkeId);
+              sonuclar.push({ tip: 'il', ad: il.ad, alt: ulke ? ulke.ad : '', href: `./il.html?id=${il.id}`, foto: il.fotograf, emoji: '🏙️', plaka: il.plaka });
+            }
+          });
+
+          // İlçelerde ara
+          ilceler.forEach(ilce => {
+            if (ilce.ad.toLowerCase().includes(q)) {
+              const il = iller.find(i => i.id === ilce.ilId);
+              const ulke = il ? ulkeler.find(u => u.id === il.ulkeId) : null;
+              const yol = [ulke?.ad, il?.ad].filter(Boolean).join(' › ');
+              sonuclar.push({ tip: 'ilce', ad: ilce.ad, alt: yol, href: `./ilce.html?id=${ilce.id}`, foto: ilce.fotograf, emoji: '📍' });
+            }
+          });
+
+          if (!sonuclar.length) {
+            aramaBilgi.textContent = `"${aramaInput.value}" için sonuç bulunamadı.`;
+            aramaListe.innerHTML = '';
+            return;
+          }
+
+          aramaBilgi.textContent = `${sonuclar.length} sonuç bulundu`;
+          aramaListe.innerHTML = sonuclar.map(s => `
+            <a href="${s.href}" class="arama-sonuc-item">
+              <div class="arama-foto">
+                ${s.foto ? `<img src="${s.foto}" alt="${s.ad}" />` : s.emoji}
+              </div>
+              <div class="arama-info">
+                <span class="arama-ad">${s.ad}</span>
+                ${s.alt ? `<span class="arama-alt">${s.alt}</span>` : ''}
+              </div>
+              <span class="arama-tip arama-tip-${s.tip}">${s.tip === 'ulke' ? 'Ülke' : s.tip === 'il' ? 'İl' : 'İlçe'}</span>
+            </a>`).join('');
+        });
 
         ulkeler.forEach(ulke => {
           const ulkeIller = iller.filter(i => i.ulkeId === ulke.id);
