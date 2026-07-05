@@ -20,7 +20,7 @@
       <div class="header-right">
         <nav class="main-nav">
           <a href="index.html" class="active">Ana Sayfa</a>
-          <a href="#ulkeler">Keşfet</a>
+          <a href="#kesfet">Keşfet</a>
         </nav>
         <button class="theme-toggle" id="theme-toggle" aria-label="Gece modu"></button>
       </div>
@@ -39,11 +39,10 @@
   </section>
 
   <!-- MAIN -->
-  <main class="main-content" id="ulkeler">
-    <h2 class="section-title">Ülkeler</h2>
+  <main class="main-content" id="kesfet">
+    <h2 class="section-title">Keşfet</h2>
 
-    <div id="ulke-listesi" class="story-grid">
-      <!-- Yükleniyor -->
+    <div id="accordion-root">
       <div class="loading">
         <div class="spinner"></div>
         <p>Yükleniyor...</p>
@@ -63,7 +62,7 @@
 
   <script type="module">
     import { db } from './js/firebase-config.js';
-    import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
     // Gece modu
     const toggle = document.getElementById('theme-toggle');
@@ -76,50 +75,125 @@
       localStorage.setItem('theme', next);
     });
 
-    const liste = document.getElementById('ulke-listesi');
+    const root = document.getElementById('accordion-root');
 
-    async function ulkeleriYukle() {
+    // Tüm veriyi tek seferde çek
+    async function yukle() {
       try {
-        const snapshot = await getDocs(collection(db, 'ulkeler'));
+        const [ulkeSnap, ilSnap, ilceSnap] = await Promise.all([
+          getDocs(collection(db, 'ulkeler')),
+          getDocs(collection(db, 'iller')),
+          getDocs(collection(db, 'ilceler'))
+        ]);
 
-        if (snapshot.empty) {
-          liste.innerHTML = `
-            <div class="empty-state">
-              <div class="owl-icon">🦉</div>
-              <p>Henüz içerik eklenmemiş. Yakında geliyor!</p>
-            </div>`;
+        if (ulkeSnap.empty) {
+          root.innerHTML = `<div class="empty-state"><div class="owl-icon">🦉</div><p>Henüz içerik eklenmemiş.</p></div>`;
           return;
         }
 
-        // Türkiye önce, geri kalanlar alfabetik
-        const ulkeler = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const ulkeler = ulkeSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const iller   = ilSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const ilceler = ilceSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Sırala
         ulkeler.sort((a, b) => {
-          const aTr = a.ad.replace(/^[^a-zA-ZğüşıöçĞÜŞİÖÇ]+/, '').toLowerCase().startsWith('türkiye');
-          const bTr = b.ad.replace(/^[^a-zA-ZğüşıöçĞÜŞİÖÇ]+/, '').toLowerCase().startsWith('türkiye');
+          const aTr = a.ad.replace(/^\W+/, '').toLowerCase().startsWith('türkiye');
+          const bTr = b.ad.replace(/^\W+/, '').toLowerCase().startsWith('türkiye');
           if (aTr && !bTr) return -1;
           if (!aTr && bTr) return 1;
           return a.ad.localeCompare(b.ad, 'tr');
         });
+        iller.sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
+        ilceler.sort((a, b) => a.ad.localeCompare(b.ad, 'tr'));
 
-        liste.innerHTML = '';
-        ulkeler.forEach(d => {
-          liste.innerHTML += `
-            <a href="ulke.html?id=${d.id}" class="story-card">
-              <div class="story-ring">
-                <div class="story-inner">
-                  ${d.fotograf ? `<img src="${d.fotograf}" alt="${d.ad}" />` : '🌍'}
+        root.innerHTML = '';
+
+        ulkeler.forEach(ulke => {
+          const ulkeIller = iller.filter(i => i.ulkeId === ulke.id);
+
+          const ulkeEl = document.createElement('div');
+          ulkeEl.className = 'akordeon-ulke';
+
+          // Ülke başlığı
+          ulkeEl.innerHTML = `
+            <button class="akordeon-ulke-btn" aria-expanded="false">
+              <div class="akordeon-ulke-sol">
+                <div class="akordeon-foto">
+                  ${ulke.fotograf ? `<img src="${ulke.fotograf}" alt="${ulke.ad}" />` : '🌍'}
                 </div>
+                <span class="akordeon-ulke-ad">${ulke.ad}</span>
               </div>
-              <span class="story-name">${d.ad}</span>
-            </a>`;
+              <span class="akordeon-ok">›</span>
+            </button>
+            <div class="akordeon-iller" hidden>
+              ${ulkeIller.length === 0
+                ? '<p class="akordeon-bos">Henüz il eklenmemiş.</p>'
+                : ulkeIller.map(il => {
+                    const ilIlceler = ilceler.filter(ilce => ilce.ilId === il.id);
+                    return `
+                    <div class="akordeon-il">
+                      <button class="akordeon-il-btn" aria-expanded="false">
+                        <div class="akordeon-il-sol">
+                          <div class="akordeon-foto akordeon-foto-sm">
+                            ${il.fotograf ? `<img src="${il.fotograf}" alt="${il.ad}" />` : '🏙️'}
+                          </div>
+                          <span class="akordeon-il-ad">${il.ad}</span>
+                          ${il.plaka ? `<span class="akordeon-plaka">${il.plaka}</span>` : ''}
+                        </div>
+                        <span class="akordeon-ok">›</span>
+                      </button>
+                      <div class="akordeon-ilceler" hidden>
+                        ${ilIlceler.length === 0
+                          ? '<p class="akordeon-bos">Henüz ilçe eklenmemiş.</p>'
+                          : `<div class="story-grid akordeon-story">${ilIlceler.map(ilce => `
+                            <a href="ilce.html?id=${ilce.id}" class="story-card">
+                              <div class="story-ring">
+                                <div class="story-inner">
+                                  ${ilce.fotograf ? `<img src="${ilce.fotograf}" alt="${ilce.ad}" />` : '📍'}
+                                </div>
+                              </div>
+                              <span class="story-name">${ilce.ad}</span>
+                            </a>`).join('')}</div>`
+                        }
+                      </div>
+                    </div>`;
+                  }).join('')
+              }
+            </div>`;
+
+          root.appendChild(ulkeEl);
+
+          // Ülke toggle
+          const ulkeBtn = ulkeEl.querySelector('.akordeon-ulke-btn');
+          const ulkeIllerDiv = ulkeEl.querySelector('.akordeon-iller');
+          ulkeBtn.addEventListener('click', () => {
+            const acik = ulkeBtn.getAttribute('aria-expanded') === 'true';
+            ulkeBtn.setAttribute('aria-expanded', !acik);
+            ulkeBtn.classList.toggle('acik', !acik);
+            if (acik) ulkeIllerDiv.setAttribute('hidden', '');
+            else ulkeIllerDiv.removeAttribute('hidden');
+          });
+
+          // İl togglelar
+          ulkeEl.querySelectorAll('.akordeon-il-btn').forEach(ilBtn => {
+            const ilceDiv = ilBtn.nextElementSibling;
+            ilBtn.addEventListener('click', () => {
+              const acik = ilBtn.getAttribute('aria-expanded') === 'true';
+              ilBtn.setAttribute('aria-expanded', !acik);
+              ilBtn.classList.toggle('acik', !acik);
+              if (acik) ilceDiv.setAttribute('hidden', '');
+              else ilceDiv.removeAttribute('hidden');
+            });
+          });
         });
+
       } catch (err) {
-        liste.innerHTML = `<div class="empty-state"><p>Bir hata oluştu. Lütfen sayfayı yenileyin.</p></div>`;
+        root.innerHTML = `<div class="empty-state"><p>Bir hata oluştu. Lütfen sayfayı yenileyin.</p></div>`;
         console.error(err);
       }
     }
 
-    ulkeleriYukle();
+    yukle();
   </script>
 
 </body>

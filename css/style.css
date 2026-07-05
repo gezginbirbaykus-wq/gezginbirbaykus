@@ -1167,3 +1167,166 @@ img { max-width: 100%; display: block; }
   .admin-tabs { width: 100%; }
   .admin-tab { flex: 1; text-align: center; padding: 10px 8px; }
 }
+
+/* ===== ACCORDION ===== */
+.akordeon-ulke {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: var(--bg-card);
+  transition: box-shadow 0.2s;
+}
+
+.akordeon-ulke:has(.akordeon-ulke-btn.acik) {
+  box-shadow: 0 4px 20px rgba(155,98,64,0.1);
+}
+
+.akordeon-ulke-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 12px;
+  transition: background 0.2s;
+}
+
+.akordeon-ulke-btn:hover { background: var(--brown-10); }
+.akordeon-ulke-btn.acik  { background: var(--brown-10); }
+
+.akordeon-ulke-sol {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.akordeon-foto {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--brown-20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+}
+
+.akordeon-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.akordeon-foto-sm {
+  width: 36px;
+  height: 36px;
+  font-size: 1rem;
+}
+
+.akordeon-ulke-ad {
+  font-family: 'Sanchez', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--brown);
+  font-weight: 400;
+}
+
+.akordeon-il-ad {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.akordeon-plaka {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--border-light);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1px 7px;
+  font-family: 'Inter', monospace;
+  margin-left: 4px;
+}
+
+.akordeon-ok {
+  font-size: 1.3rem;
+  color: var(--brown-60);
+  transition: transform 0.25s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.akordeon-ulke-btn.acik .akordeon-ok,
+.akordeon-il-btn.acik .akordeon-ok {
+  transform: rotate(90deg);
+}
+
+/* İller listesi */
+.akordeon-iller {
+  border-top: 1px solid var(--border-light);
+  padding: 8px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.akordeon-il {
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+}
+
+.akordeon-il-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 10px;
+  transition: background 0.2s;
+}
+
+.akordeon-il-btn:hover { background: var(--brown-10); }
+.akordeon-il-btn.acik  { background: var(--brown-10); }
+
+.akordeon-il-sol {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* İlçeler story grid */
+.akordeon-ilceler {
+  border-top: 1px solid var(--border-light);
+  padding: 16px;
+}
+
+.akordeon-story {
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 12px;
+}
+
+.akordeon-bos {
+  font-size: 0.85rem;
+  color: var(--text-faint);
+  font-style: italic;
+  padding: 8px 4px;
+}
