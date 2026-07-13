@@ -1050,8 +1050,10 @@
           goster('ilce-alert', 'İlçe başarıyla eklendi!');
         }
         e.target.reset();
-        fotografKaldir('ilce');
+        storyFotoKaldir();
+        kapakFotoKaldir();
         icerikFotolariSifirla();
+        document.getElementById('ilce-edit-id').value = '';
         await ilceleriYukle();
       } catch (err) {
         goster('ilce-alert', 'Hata: ' + err.message, 'error');
