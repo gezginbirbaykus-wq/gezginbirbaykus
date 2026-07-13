@@ -951,43 +951,56 @@
       const ilce = ilceler.find(i => i.id === id);
       if (!ilce) return;
 
-      document.getElementById('ilce-edit-id').value = id;
-      document.getElementById('ilce-ad').value = ilce.ad || '';
-      document.getElementById('ilce-aciklama').value = ilce.aciklama || '';
-      document.getElementById('ilce-harita').value = ilce.haritaEmbed || '';
-      document.getElementById('ilce-instagram').value = ilce.instagram || '';
+      // Tab'ı ilçeye geç
+      document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelector('[data-tab="ilce"]').classList.add('active');
+      document.getElementById('tab-ilce').classList.add('active');
 
-      // Mevcut içerik fotoğrafları
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+
+      setVal('ilce-edit-id', id);
+      setVal('ilce-ad', ilce.ad);
+      setVal('ilce-aciklama', ilce.aciklama);
+      setVal('ilce-harita', ilce.haritaEmbed);
+      setVal('ilce-instagram', ilce.instagram);
+
+      // İçerik fotoğrafları
       icerikFotolar = ilce.icerikFotolar || [];
       renderIcerikFotoListesi();
 
       // Story fotosu
-      document.getElementById('ilce-fotograf').value = ilce.fotograf || '';
-      if (ilce.fotograf) {
+      setVal('ilce-fotograf', ilce.fotograf);
+      const storyPreview = document.getElementById('story-fotograf-preview');
+      const storyArea = document.getElementById('story-upload-area');
+      if (ilce.fotograf && storyPreview && storyArea) {
         document.getElementById('story-fotograf-img').src = ilce.fotograf;
-        document.getElementById('story-fotograf-preview').style.display = '';
-        document.getElementById('story-upload-area').querySelector('.upload-placeholder').style.display = 'none';
-      } else {
-        document.getElementById('story-fotograf-preview').style.display = 'none';
-        document.getElementById('story-upload-area').querySelector('.upload-placeholder').style.display = '';
+        storyPreview.style.display = '';
+        storyArea.querySelector('.upload-placeholder').style.display = 'none';
+      } else if (storyPreview && storyArea) {
+        storyPreview.style.display = 'none';
+        storyArea.querySelector('.upload-placeholder').style.display = '';
       }
 
       // Kapak fotosu
-      document.getElementById('ilce-kapak-fotograf').value = ilce.kapakFotograf || '';
-      if (ilce.kapakFotograf) {
+      setVal('ilce-kapak-fotograf', ilce.kapakFotograf);
+      const kapakPreview = document.getElementById('kapak-fotograf-preview');
+      const kapakArea = document.getElementById('kapak-upload-area');
+      if (ilce.kapakFotograf && kapakPreview && kapakArea) {
         document.getElementById('kapak-fotograf-img').src = ilce.kapakFotograf;
-        document.getElementById('kapak-fotograf-preview').style.display = '';
-        document.getElementById('kapak-upload-area').querySelector('.upload-placeholder').style.display = 'none';
-      } else {
-        document.getElementById('kapak-fotograf-preview').style.display = 'none';
-        document.getElementById('kapak-upload-area').querySelector('.upload-placeholder').style.display = '';
+        kapakPreview.style.display = '';
+        kapakArea.querySelector('.upload-placeholder').style.display = 'none';
+      } else if (kapakPreview && kapakArea) {
+        kapakPreview.style.display = 'none';
+        kapakArea.querySelector('.upload-placeholder').style.display = '';
       }
 
       // Ülke seçimi
-      document.getElementById('ilce-ulke').value = '';
+      const ilceUlkeEl = document.getElementById('ilce-ulke');
+      if (ilceUlkeEl) ilceUlkeEl.value = '';
       const il = iller.find(i => i.id === ilce.ilId);
       if (il) {
-        document.getElementById('ilce-ulke').value = il.ulkeId;
+        if (ilceUlkeEl) ilceUlkeEl.value = il.ulkeId;
         ilceFiltreIllerDoldur(il.ulkeId, ilce.ilId);
       }
 
