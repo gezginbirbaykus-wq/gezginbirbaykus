@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gezginbirbaykus-wq.github.io/gezginbirbaykus/sitemap.xml
