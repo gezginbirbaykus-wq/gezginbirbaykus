@@ -142,11 +142,13 @@
       document.getElementById('ilce-icerik').style.display = '';
       document.getElementById('yukleniyor').style.display = 'none';
 
-      // Tanıtım yazısını [foto:N] etiketleriyle render et
+      // Tanıtım yazısını render et — HTML içerik + [foto:N] desteği
       const aciklama = ilce.aciklama || '';
-      const parcalar = aciklama.split(/(\[foto:\d+\])/g);
       const aciklamaEl = document.getElementById('ilce-aciklama');
       aciklamaEl.innerHTML = '';
+
+      // [foto:N] etiketlerini ayır
+      const parcalar = aciklama.split(/(\[foto:\d+\])/g);
       parcalar.forEach(parca => {
         const fotoMatch = parca.match(/^\[foto:(\d+)\]$/);
         if (fotoMatch) {
@@ -162,11 +164,11 @@
             wrapper.appendChild(img);
             aciklamaEl.appendChild(wrapper);
           }
-        } else if (parca.trim()) {
-          const p = document.createElement('p');
-          p.className = 'ilce-description';
-          p.textContent = parca;
-          aciklamaEl.appendChild(p);
+        } else if (parca) {
+          const div = document.createElement('div');
+          div.className = 'ilce-description';
+          div.innerHTML = parca;
+          aciklamaEl.appendChild(div);
         }
       });
 

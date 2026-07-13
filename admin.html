@@ -177,7 +177,37 @@
             </div>
             <div class="form-group">
               <label>Tanıtım Yazısı *</label>
-              <textarea id="ilce-aciklama" required placeholder="İlçeyi tanıtın..."></textarea>
+              <div class="editor-toolbar">
+                <select class="editor-btn" onchange="editorKomut('fontName', this.value); this.value=''">
+                  <option value="">Font</option>
+                  <option value="Inter">Inter</option>
+                  <option value="Sanchez">Sanchez</option>
+                </select>
+                <select class="editor-btn" onchange="editorKomut('fontSize', this.value); this.value=''">
+                  <option value="">Punto</option>
+                  <option value="1">Küçük (10)</option>
+                  <option value="2">Normal (13)</option>
+                  <option value="3">Orta (16)</option>
+                  <option value="4">Büyük (18)</option>
+                  <option value="5">Daha Büyük (24)</option>
+                  <option value="6">Başlık (32)</option>
+                </select>
+                <div class="editor-sep"></div>
+                <button type="button" class="editor-btn" onclick="editorKomut('bold')" title="Kalın"><b>B</b></button>
+                <button type="button" class="editor-btn editor-italic" onclick="editorKomut('italic')" title="İtalik"><i>I</i></button>
+                <button type="button" class="editor-btn editor-underline" onclick="editorKomut('underline')" title="Altı Çizili"><u>U</u></button>
+                <div class="editor-sep"></div>
+                <button type="button" class="editor-btn" onclick="editorKomut('justifyLeft')" title="Sola">⬅</button>
+                <button type="button" class="editor-btn" onclick="editorKomut('justifyCenter')" title="Ortala">↔</button>
+                <button type="button" class="editor-btn" onclick="editorKomut('justifyRight')" title="Sağa">➡</button>
+                <div class="editor-sep"></div>
+                <button type="button" class="editor-btn" onclick="editorKomut('insertUnorderedList')" title="Liste">• ≡</button>
+                <button type="button" class="editor-btn editor-foto-ekle" onclick="editorFotoEkle()" title="[foto:N] ekle">📷</button>
+                <div class="editor-sep"></div>
+                <button type="button" class="editor-btn editor-temizle" onclick="editorTemizle()" title="Formatı temizle">✕ Format</button>
+              </div>
+              <div id="ilce-aciklama-editor" class="editor-alan" contenteditable="true" data-placeholder="İlçeyi tanıtın..."></div>
+              <textarea id="ilce-aciklama" style="display:none;"></textarea>
             </div>
 
             <!-- STORY FOTOSU -->
@@ -371,7 +401,46 @@
       });
     });
 
-    // ===== CLOUDINARY UPLOAD =====
+    // ===== ZENGİN METİN EDİTÖRÜ =====
+    const editor = document.getElementById('ilce-aciklama-editor');
+    const editorHidden = document.getElementById('ilce-aciklama');
+
+    // Editor içeriğini hidden textarea ile senkronize et
+    editor.addEventListener('input', () => {
+      editorHidden.value = editor.innerHTML;
+    });
+
+    function editorKomut(komut, deger = null) {
+      editor.focus();
+      document.execCommand(komut, false, deger);
+      editorHidden.value = editor.innerHTML;
+    }
+
+    window.editorKomut = editorKomut;
+
+    window.editorFotoEkle = () => {
+      const sayi = prompt('Kaçıncı içerik fotoğrafını eklemek istiyorsun?', '1');
+      if (!sayi) return;
+      editor.focus();
+      document.execCommand('insertText', false, `[foto:${sayi}]`);
+      editorHidden.value = editor.innerHTML;
+    };
+
+    window.editorTemizle = () => {
+      editor.focus();
+      document.execCommand('removeFormat', false, null);
+      editorHidden.value = editor.innerHTML;
+    };
+
+    function editorDoldur(html) {
+      editor.innerHTML = html || '';
+      editorHidden.value = html || '';
+    }
+
+    function editorSifirla() {
+      editor.innerHTML = '';
+      editorHidden.value = '';
+    }
     const CLOUD_NAME = 'qfrnbu9y';
     const UPLOAD_PRESET = 'z01gkjtv';
 
@@ -961,7 +1030,7 @@
 
       setVal('ilce-edit-id', id);
       setVal('ilce-ad', ilce.ad);
-      setVal('ilce-aciklama', ilce.aciklama);
+      editorDoldur(ilce.aciklama);
       setVal('ilce-harita', ilce.haritaEmbed);
       setVal('ilce-instagram', ilce.instagram);
 
@@ -1014,6 +1083,7 @@
       document.getElementById('ilce-edit-id').value = '';
       document.getElementById('ilce-kaydet-btn').textContent = 'İlçe Ekle';
       document.getElementById('ilce-iptal-btn').style.display = 'none';
+      editorSifirla();
       storyFotoKaldir();
       kapakFotoKaldir();
       icerikFotolariSifirla();
@@ -1050,6 +1120,7 @@
           goster('ilce-alert', 'İlçe başarıyla eklendi!');
         }
         e.target.reset();
+        editorSifirla();
         storyFotoKaldir();
         kapakFotoKaldir();
         icerikFotolariSifirla();
