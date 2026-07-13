@@ -587,11 +587,12 @@ img { max-width: 100%; display: block; }
 
 /* Story preview: yuvarlak */
 .story-preview {
-  height: 160px;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  background: transparent;
 }
 
 .story-preview img {
@@ -599,7 +600,8 @@ img { max-width: 100%; display: block; }
   height: 120px;
   object-fit: cover;
   border-radius: 50%;
-  border: 3px solid var(--brown-40);
+  border: 3px solid var(--brown);
+  box-shadow: 0 0 0 3px var(--brown-40);
 }
 
 /* Kapak preview: geniş banner */
@@ -1043,7 +1045,7 @@ img { max-width: 100%; display: block; }
   height: 200px;
 }
 
-.upload-preview img {
+.upload-preview:not(.story-preview):not(.kapak-preview) img {
   width: 100%;
   height: 100%;
   object-fit: cover;
